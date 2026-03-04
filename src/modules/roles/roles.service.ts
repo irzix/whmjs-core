@@ -16,25 +16,31 @@ export class RolesService implements OnModuleInit {
 
   async onModuleInit() {
     const resources = ['users', 'roles', 'permissions', 'products', 'orders', 'invoices', 'tickets', 'servers', 'payments', 'notifications'];
-    const defaultRoles = [
-      { id: 10, name: 'Admin', permissions: resources.map(resource => ({ resource, action: 'all', scope: 'all' })) },
-      { id: 100, name: 'User', permissions: resources.map(resource => ({ resource, action: 'read', scope: 'all' })) },
-    ];
 
-    for (const role of defaultRoles) {
-      await this.prisma.role.upsert({
-        where: { id: role.id },
-        update: {},
-        create: {
-          id: role.id,
-          name: role.name,
-          permissions: {
-            create: role.permissions,
-          },
-        },
-      });
+    for (const resource of resources) {
+      for (const [action, scope] of [['all', 'all'], ['read', 'all']]) {
+        await this.prisma.permission.upsert({
+          where: { resource_action_scope: { resource, action, scope } },
+          update: {},
+          create: { resource, action, scope },
+        });
+      }
     }
 
+    const adminPerms = await this.prisma.permission.findMany({ where: { action: 'all' } });
+    const userPerms = await this.prisma.permission.findMany({ where: { action: 'read' } });
+
+    await this.prisma.role.upsert({
+      where: { id: 10 },
+      update: {},
+      create: { id: 10, name: 'SuperAdmin', permissions: { connect: adminPerms.map(p => ({ id: p.id })) } },
+    });
+
+    await this.prisma.role.upsert({
+      where: { id: 100 },
+      update: {},
+      create: { id: 100, name: 'User', permissions: { connect: userPerms.map(p => ({ id: p.id })) } },
+    });
   }
 
 

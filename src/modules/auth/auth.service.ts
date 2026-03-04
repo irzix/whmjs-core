@@ -13,7 +13,7 @@ export class AuthService {
     async register(email: string, password: string, firstName?: string, lastName?: string) {
         const hashed = await bcrypt.hash(password, 10);
         const user = await this.prisma.user.create({
-            data: { email, password: hashed, firstName, lastName, roleId: 0 },
+            data: { email, password: hashed, firstName, lastName, roleId: 100 },
         });
         return this.signToken(user.id, user.email, user.roleId);
     }
