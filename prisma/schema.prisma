@@ -21,6 +21,10 @@ model User {
   lastName  String?
   role      Role    @relation(fields: [roleId], references: [id])
   roleId    Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  ticketReplies TicketReply[]
+  auditLogs AuditLog[]
   status    Status   @default(ACTIVE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -50,4 +54,369 @@ enum Status {
   SUSPENDED
   BLOCKED
   CANCELLED
+}
+
+model Organization {
+  id        Int       @id @default(autoincrement())
+  name      String
+  users     User[]
+  invoices  Invoice[]
+  orders    Order[]
+  transactions Transaction[]
+  domains  Domain[]
+  services Service[]
+  tickets Ticket[]
+  auditLogs AuditLog[]
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  currencyId Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Currency {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique // USD, EUR, IRR
+  name      String           // US Dollar
+  symbol    String           // $
+  rate      Float            // base currency rate
+  organizations Organization[]
+  orders        Order[]
+  coupons       Coupon[]
+  invoices      Invoice[]
+  transactions Transaction[]
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        Int       @id @default(autoincrement())
+  total     Float
+  status OrderStatus @default(PENDING)
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  currencyId Int
+  invoices Invoice[]
+  items OrderItem[]
+  coupon   Coupon? @relation(fields: [couponId], references: [id])
+  couponId Int?
+  service   Service?
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model OrderItem {
+  id          Int      @id @default(autoincrement())
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     Int
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   Int
+  createdAt   DateTime @default(now())
+}
+
+model Invoice {
+  id        Int       @id @default(autoincrement())
+  total     Float
+  status InvoiceStatus @default(PENDING)
+  currency   Currency @relation(fields: [currencyId], references: [id])
+  currencyId Int
+  transactions Transaction[]
+  items InvoiceItem[]
+  order   Order @relation(fields: [orderId], references: [id])
+  orderId Int
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  dueDate DateTime?
+  paidAt  DateTime?
+  tax   Tax? @relation(fields: [taxId], references: [id])
+  taxId Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model InvoiceItem {
+  id          Int      @id @default(autoincrement())
+  description String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  total       Float
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId   Int
+  createdAt   DateTime @default(now())
+}
+
+enum OrderStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  FRAUD
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+  OVERDUE
+}
+
+
+model Transaction {
+  id             Int               @id @default(autoincrement())
+  amount         Float
+  type           TransactionType   // CREDIT, DEBIT
+  status         TransactionStatus @default(PENDING)
+  gateway   PaymentGateway? @relation(fields: [gatewayId], references: [id])
+  gatewayId Int?
+  gatewayRef     String?           // transaction id from gateway
+  invoice        Invoice?          @relation(fields: [invoiceId], references: [id])
+  invoiceId      Int?
+  organization   Organization      @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  currency       Currency          @relation(fields: [currencyId], references: [id])
+  currencyId     Int
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model PaymentGateway {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique // stripe, paypal, crypto
+  isActive     Boolean  @default(false)
+  config       Json?    // api keys
+  transactions Transaction[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  type        ProductType
+  price       Float
+  cycle       BillingCycle @default(MONTHLY)
+  isActive    Boolean      @default(true)
+  module      String?      // cpanel, directadmin, vps
+  config      Json?        // product
+  services    Service[]
+  orderItems OrderItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum ProductType {
+  HOSTING
+  VPS
+  DOMAIN
+  LICENSE
+  OTHER
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+  BIENNIAL
+  TRIENNIAL
+  ONETIME
+}
+
+model Domain {
+  id             Int          @id @default(autoincrement())
+  name           String       @unique
+  status         DomainStatus @default(PENDING)
+  registrar      String?      // resellerclub, enom
+  expiresAt      DateTime?
+  autoRenew      Boolean      @default(true)
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  service        Service?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum DomainStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRANSFERRED
+}
+
+model Service {
+  id             Int           @id @default(autoincrement())
+  status         ServiceStatus @default(PENDING)
+  username       String?
+  password       String?       // encrypted
+  domain         Domain?       @relation(fields: [domainId], references: [id])
+  domainId       Int?          @unique
+  product        Product       @relation(fields: [productId], references: [id])
+  productId      Int
+  order          Order         @relation(fields: [orderId], references: [id])
+  orderId        Int @unique
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  server   Server? @relation(fields: [serverId], references: [id])
+  serverId Int?
+  nextDueDate    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum ServiceStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+model Ticket {
+  id             Int           @id @default(autoincrement())
+  subject        String
+  status         TicketStatus  @default(OPEN)
+  priority       TicketPriority @default(MEDIUM)
+  department     String?
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  organizationId Int
+  replies        TicketReply[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model TicketReply {
+  id        Int      @id @default(autoincrement())
+  message   String
+  isStaff   Boolean  @default(false)
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  ticketId  Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+}
+
+enum TicketStatus {
+  OPEN
+  ANSWERED
+  CUSTOMER_REPLY
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+
+model Server {
+  id          Int          @id @default(autoincrement())
+  name        String
+  hostname    String
+  ip          String
+  type        ServerType   // cpanel, directadmin, virtualizor
+  username    String?
+  password    String?      // encrypted
+  port        Int          @default(2087)
+  isActive    Boolean      @default(true)
+  maxAccounts Int          @default(100)
+  services    Service[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum ServerType {
+  CPANEL
+  DIRECTADMIN
+  VIRTUALIZOR
+  CUSTOM
+}
+
+model Tax {
+  id        Int      @id @default(autoincrement())
+  name      String   // VAT, GST
+  rate      Float    // 20.00 = 20%
+  country   String?
+  isActive  Boolean  @default(true)
+  invoices  Invoice[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Coupon {
+  id          Int          @id @default(autoincrement())
+  code        String       @unique
+  type        CouponType
+  value       Float
+  currency    Currency?    @relation(fields: [currencyId], references: [id])
+  currencyId  Int?        
+  maxUses     Int?
+  usedCount   Int          @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean      @default(true)
+  orders      Order[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED
+}
+
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // invoice.paid, service.created
+  subject   String
+  body      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  action         String   // user.login, invoice.paid, service.suspended
+  entity         String   // User, Invoice, Service
+  entityId       Int?
+  oldValue       Json?  
+  newValue       Json?    
+  ip             String?
+  userAgent      String?
+  user           User?    @relation(fields: [userId], references: [id])
+  userId         Int?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId Int?
+  createdAt      DateTime @default(now())
 }
