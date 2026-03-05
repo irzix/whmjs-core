@@ -1,6 +1,6 @@
 # Hostito
 
-> Open source web hosting billing & management system — built with Node.js, NestJS, and React.
+> Open source web hosting billing & management system — built with NestJS and PostgreSQL (via Prisma).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -34,11 +34,9 @@ Just a clean, developer-friendly billing and client management system for hostin
 
 | Layer | Technology |
 |---|---|
-| Backend | Node.js, NestJS, Fastify |
+| Backend | Node.js, NestJS |
 | Database | PostgreSQL, Prisma |
-| Cache & Queue | Redis, BullMQ |
-| Frontend | React, TailwindCSS |
-| Auth | JWT, Passport |
+| Auth | JWT (Passport, @nestjs/jwt) |
 
 ---
 
@@ -67,8 +65,10 @@ npm run start:dev
 ## Project Structure
 
 ```
-hostito/
+hostito-core/
 ├── src/
+│   ├── main.ts
+│   ├── app.module.ts
 │   ├── modules/
 │   │   ├── auth/
 │   │   ├── users/
@@ -77,9 +77,18 @@ hostito/
 │   │   ├── invoices/
 │   │   ├── payments/
 │   │   ├── tickets/
-│   │   └── notifications/
-│   ├── common/
-│   └── main.ts
+│   │   ├── notifications/
+│   │   ├── organizations/
+│   │   ├── domains/
+│   │   ├── coupons/
+│   │   ├── servers/
+│   │   ├── services/
+│   │   ├── taxes/
+│   │   ├── announcements/
+│   │   ├── roles/
+│   │   ├── audit-logs/
+│   │   └── email-templates/
+│   └── common/
 ├── prisma/
 │   └── schema.prisma
 └── test/
