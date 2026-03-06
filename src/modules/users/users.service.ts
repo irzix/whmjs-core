@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from 'generated/prisma/client';
 import { hasPermission } from 'src/common/decorators/permission.decorator';
@@ -76,10 +76,14 @@ export class UsersService {
    * @returns 
    */
   async findOne(id: number) {
-    return await this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
       select: userSelect,
     });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    return user
   }
 
   /**

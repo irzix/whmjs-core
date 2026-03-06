@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FindProductDto } from './dto/find-product.dto';
@@ -11,12 +11,25 @@ export class ProductsService {
 
   constructor(private prisma: PrismaService) { }
 
+  /**
+   * Create a product
+   * @param createProductDto 
+   * @returns 
+   */
+
   async create(createProductDto: CreateProductDto) {
     return await this.prisma.product.create({
       data: createProductDto,
       select: productSelect,
     });
   }
+
+  /**
+   * Find all products
+   * @param findProductDto 
+   * @param currentUser 
+   * @returns 
+   */
 
   async findAll({ page, limit }: FindProductDto, currentUser?) {
     const pageNumber = page || 1;
@@ -38,16 +51,36 @@ export class ProductsService {
     return { data, total, page: pageNumber, limit: pageSize };
   }
 
+  /**
+   * Find a product by ID
+   * @param id 
+   * @param currentUser 
+   * @returns 
+   */
+
   async findOne(id: number, currentUser?) {
 
     const canView = currentUser && hasPermission(currentUser, 'products', 'read', 'all');
     const where = canView ? {} : { isActive: true };
 
-    return await this.prisma.product.findUnique({
+    const product = await this.prisma.product.findUnique({
       where: { id, ...where },
       select: productSelect,
     });
+
+    if(!product) throw new NotFoundException('Product not found');
+
+    return product
+    
   }
+
+  /**
+   * Update a product
+   * @param id 
+   * @param updateProductDto 
+   * @param currentUser 
+   * @returns 
+   */
 
   async update(id: number, updateProductDto: UpdateProductDto, currentUser?) {
     
@@ -63,6 +96,12 @@ export class ProductsService {
     });
   }
 
+  /**
+   * Delete a product
+   * @param id 
+   * @param currentUser 
+   * @returns 
+   */
   async remove(id: number, currentUser?) {
     const canDelete = currentUser && hasPermission(currentUser, 'products', 'delete', 'all');
     if (!canDelete) {
