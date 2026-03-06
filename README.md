@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Made by Webito](https://img.shields.io/badge/made%20by-Webito-black)](https://webito.io)
+[![Sponsor](https://img.shields.io/badge/Sponsor-webito--io-ff69b4)](https://github.com/sponsors/webito-io)
 
 ---
 
@@ -44,8 +45,8 @@ Just a clean, developer-friendly billing and client management system for hostin
 
 ```bash
 # Clone the repo
-git clone https://github.com/webito-io/hostito.git
-cd hostito
+git clone https://github.com/webito-io/hostito-core.git
+cd hostito-core
 
 # Install dependencies
 npm install
@@ -53,8 +54,8 @@ npm install
 # Setup environment
 cp .env.example .env
 
-# Run database migrations
-npx prisma migrate dev
+# Generate Prisma client & run initial migrations
+npm run prepare
 
 # Start development server
 npm run start:dev
@@ -96,11 +97,33 @@ hostito-core/
 
 ---
 
+## Scripts
+
+- build — compile TypeScript to dist
+- start — run production server
+- start:dev — run dev server with watch
+- lint — run ESLint with auto-fix
+- test, test:watch, test:cov — unit tests via Jest
+- test:e2e — e2e tests via Jest
+- prepare — Prisma generate + migrate dev
+
+---
+
+## API Reference
+
+- Docs served at: http://localhost:3000/api
+- Auth: Bearer JWT
+- Generated via @nestjs/swagger + @scalar/nestjs-api-reference
+
+---
+
 ## Roadmap
 
 - [x] Project architecture
-- [ ] Auth & user management
-- [ ] Products & plans
+- [x] Auth foundation (JWT, roles, permissions)
+- [x] Users module (basic CRUD)
+- [x] Products module (listing, pagination)
+- [ ] Plans management
 - [ ] Orders & invoices
 - [ ] Payment gateway integrations
 - [ ] Support ticket system
@@ -109,6 +132,33 @@ hostito-core/
 - [ ] Client portal (React)
 - [ ] Multi-language support
 - [ ] Multi-currency support
+
+---
+
+## Environment Variables
+
+Set these in your `.env`:
+
+- DATABASE_URL — Postgres connection string
+- PORT — server port (default: 3000)
+- JWT_SECRET — secret for JWT tokens
+- EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD, EMAIL_FROM — SMTP settings
+
+---
+
+## Sponsorship
+
+We’re building modern, JavaScript-based, open source infrastructure for hosting providers and fintech:
+
+- Hostito — hosting billing & management (NestJS + Prisma)
+- Exito — crypto exchange platform
+- Ledgito — accounting for exchanges and hosting
+
+Your support helps us keep everything free and open source, invest in docs and community, and accelerate development.
+
+- Sponsor: https://github.com/sponsors/webito-io
+ 
+Thank you for believing in open source.
 
 ---
 
