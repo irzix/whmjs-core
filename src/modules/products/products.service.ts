@@ -1,26 +1,76 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { FindProductDto } from './dto/find-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { productSelect } from './selects/product.select';
+import { hasPermission } from 'src/common/decorators/permission.decorator';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+
+  constructor(private prisma: PrismaService) { }
+
+  async create(createProductDto: CreateProductDto) {
+    return await this.prisma.product.create({
+      data: createProductDto,
+      select: productSelect,
+    });
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll({ page, limit }: FindProductDto, currentUser?) {
+    const pageNumber = page || 1;
+    const pageSize = limit || 10;
+
+    const canView = currentUser && hasPermission(currentUser, 'products', 'read', 'all');
+    const where = canView ? {} : { isActive: true };
+
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({
+        skip: (pageNumber - 1) * pageSize,
+        take: pageSize,
+        where,
+        select: productSelect,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return { data, total, page: pageNumber, limit: pageSize };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(id: number, currentUser?) {
+
+    const canView = currentUser && hasPermission(currentUser, 'products', 'read', 'all');
+    const where = canView ? {} : { isActive: true };
+
+    return await this.prisma.product.findUnique({
+      where: { id, ...where },
+      select: productSelect,
+    });
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(id: number, updateProductDto: UpdateProductDto, currentUser?) {
+    
+    const canUpdate = currentUser && hasPermission(currentUser, 'products', 'update', 'all');
+    if (!canUpdate) {
+      throw new ForbiddenException('You do not have permission to update this product');
+    }
+
+    return await this.prisma.product.update({
+      where: { id },
+      data: updateProductDto,
+      select: productSelect,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: number, currentUser?) {
+    const canDelete = currentUser && hasPermission(currentUser, 'products', 'delete', 'all');
+    if (!canDelete) {
+      throw new ForbiddenException('You do not have permission to delete this product');
+    }
+
+    return await this.prisma.product.delete({
+      where: { id }
+    });
   }
 }

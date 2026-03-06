@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, MinLength } from "class-validator";
 import { Status } from "generated/prisma/enums";
 
@@ -36,6 +37,7 @@ export class CreateUserDto {
     @ApiProperty({ description: 'User organization ID' })
     @IsOptional()
     @IsNumber()
+    @Type(() => Number)
     organizationId?: number;
     
     @ApiProperty({ description: 'User status' })
@@ -44,5 +46,7 @@ export class CreateUserDto {
   
     @ApiProperty({ description: 'User role ID' })
     @IsNumber()
+    @IsOptional()
+    @Type(() => Number)
     roleId: number;
 }

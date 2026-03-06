@@ -88,6 +88,7 @@ model Currency {
   orders        Order[]
   coupons       Coupon[]
   invoices      Invoice[]
+  products Product[]
   transactions Transaction[]
   isDefault Boolean  @default(false)
   isActive  Boolean  @default(true)
@@ -213,19 +214,21 @@ model PaymentGateway {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   name        String
   description String?
   type        ProductType
   price       Float
-  cycle       BillingCycle @default(MONTHLY)
-  isActive    Boolean      @default(true)
-  module      String?      // cpanel, directadmin, vps
-  config      Json?        // product
+  currency    Currency         @relation(fields: [currencyId], references: [id])
+  currencyId  Int
+  cycle       BillingCycle     @default(MONTHLY)
+  isActive    Boolean          @default(true)
+  module      String?
+  config      Json?
   services    Service[]
-  orderItems OrderItem[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  orderItems  OrderItem[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 enum ProductType {
