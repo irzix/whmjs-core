@@ -5,7 +5,6 @@ import { AuthModule } from './modules/auth/auth.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { PaymentsModule } from './modules/payments/payments.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { ProductsModule } from './modules/products/products.module';
 import { ServersModule } from './modules/servers/servers.module';
@@ -22,10 +21,33 @@ import { EmailTemplatesModule } from './modules/email-templates/email-templates.
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CurrenciesModule } from './modules/currencies/currencies.module';
 import { CartsModule } from './modules/carts/carts.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
-  imports: [AuthModule, UsersModule, ProductsModule, OrdersModule, InvoicesModule, PaymentsModule, TicketsModule, ServersModule, NotificationsModule, PrismaModule, RolesModule, ServicesModule, OrganizationsModule, DomainsModule, TaxesModule, CouponsModule, AnnouncementsModule, EmailTemplatesModule, AuditLogsModule, CurrenciesModule, CartsModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    ProductsModule,
+    OrdersModule,
+    InvoicesModule,
+    TicketsModule,
+    ServersModule,
+    NotificationsModule,
+    PrismaModule,
+    RolesModule,
+    ServicesModule,
+    OrganizationsModule,
+    DomainsModule,
+    TaxesModule,
+    CouponsModule,
+    AnnouncementsModule,
+    EmailTemplatesModule,
+    AuditLogsModule,
+    CurrenciesModule,
+    CartsModule,
+    EventEmitterModule.forRoot(),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

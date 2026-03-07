@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from 'generated/prisma/client';
 import { hasPermission } from 'src/common/decorators/permission.decorator';
@@ -11,26 +15,42 @@ import { UpdateOwnUserDto } from './dto/update-own-user.dto';
 
 @Injectable()
 export class UsersService {
-
-  constructor(private readonly prisma: PrismaService) { }
-
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Create a new user
-   * @param createUserDto 
-   * @returns 
+   * @param createUserDto
+   * @returns
    */
   async create(createUserDto: CreateUserDto) {
-
-    const { email, firstName, lastName, organizationName, password, phone, organizationId } = createUserDto;
+    const {
+      email,
+      firstName,
+      lastName,
+      organizationName,
+      password,
+      phone,
+      organizationId,
+    } = createUserDto;
 
     const hashed = await bcrypt.hash(password, 10);
 
     let orgId = organizationId;
     /** Create organization */
     if (!orgId) {
+      const defaultCurrency = await this.prisma.currency.findFirst({
+        where: { isDefault: true },
+      });
+      if (!defaultCurrency) {
+        throw new NotFoundException('Default currency not found');
+      }
       const CreateOrg = await this.prisma.organization.create({
-        data: { name: organizationName || `${(lastName || email.split('@')[0]).trim()}'s Organization`, currency: { connect: { id: 1 } } },
+        data: {
+          name:
+            organizationName ||
+            `${(lastName || email.split('@')[0]).trim()}'s Organization`,
+          currency: { connect: { id: defaultCurrency.id } },
+        },
       });
       orgId = CreateOrg.id;
     }
@@ -43,8 +63,8 @@ export class UsersService {
         password: hashed,
         firstName: firstName,
         lastName: lastName,
-        role: { connect: { id: 100 } },
-        organization: { connect: { id: orgId } }
+        role: { connect: { name: 'User' } },
+        organization: { connect: { id: orgId } },
       },
       select: userSelect,
     });
@@ -54,10 +74,9 @@ export class UsersService {
 
   /**
    * Get all users
-   * @returns 
+   * @returns
    */
   async findAll({ page, limit }: FindUserDto) {
-
     const pageNumber = page || 1;
     const pageSize = limit || 10;
     const skip = (pageNumber - 1) * pageSize;
@@ -72,8 +91,8 @@ export class UsersService {
 
   /**
    * Get a user by id
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
@@ -83,18 +102,19 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    return user
+    return user;
   }
 
   /**
    * Update a user
-   * @param id 
-   * @param updateUserDto 
-   * @returns 
+   * @param id
+   * @param updateUserDto
+   * @returns
    */
   async update(id: number, updateUserDto: UpdateUserDto) {
-
-    const password = updateUserDto.password ? await bcrypt.hash(updateUserDto.password, 10) : undefined;
+    const password = updateUserDto.password
+      ? await bcrypt.hash(updateUserDto.password, 10)
+      : undefined;
 
     return await this.prisma.user.update({
       where: { id },
@@ -102,30 +122,30 @@ export class UsersService {
         ...updateUserDto,
         password,
       },
-      select: userSelect
+      select: userSelect,
     });
   }
 
   /**
    * Update own user
-   * @param id 
-   * @param updateOwnDto 
-   * @returns 
+   * @param id
+   * @param updateOwnDto
+   * @returns
    */
   async updateOwn(id: number, updateOwnDto: UpdateOwnUserDto) {
-    const password = updateOwnDto.password ? await bcrypt.hash(updateOwnDto.password, 10) : undefined;
+    const password = updateOwnDto.password
+      ? await bcrypt.hash(updateOwnDto.password, 10)
+      : undefined;
     return await this.update(id, {
       ...updateOwnDto,
       password,
     });
   }
 
-
-
   /**
    * Delete a user
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   async remove(id: number) {
     return await this.prisma.user.delete({

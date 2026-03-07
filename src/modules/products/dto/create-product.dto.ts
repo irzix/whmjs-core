@@ -1,9 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsEnum, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
-import { BillingCycle, ProductType } from "generated/prisma/enums";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { BillingCycle, ProductType } from 'generated/prisma/enums';
 
 export class CreateProductDto {
-
   @ApiProperty({ description: 'Name of the product' })
   @IsString()
   name: string;
@@ -17,7 +23,7 @@ export class CreateProductDto {
   @IsNumber()
   price: number;
 
-  @ApiProperty({ description: 'ID of the currency', })
+  @ApiProperty({ description: 'ID of the currency' })
   @IsNumber()
   currencyId: number;
 
@@ -25,7 +31,10 @@ export class CreateProductDto {
   @IsEnum(ProductType)
   type: ProductType;
 
-  @ApiProperty({ enum: BillingCycle, description: 'Billing cycle of the product' })
+  @ApiProperty({
+    enum: BillingCycle,
+    description: 'Billing cycle of the product',
+  })
   @IsEnum(BillingCycle)
   cycle: BillingCycle;
 
@@ -34,7 +43,10 @@ export class CreateProductDto {
   @IsBoolean()
   isActive?: boolean;
 
-  @ApiProperty({ description: 'Module of the product (cpanel, directadmin, vps)', required: false })
+  @ApiProperty({
+    description: 'Module of the product (cpanel, directadmin, vps)',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   module?: string;

@@ -1,34 +1,66 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { CouponsService } from './coupons.service';
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
+import { AuthGuard } from '../auth/auth.guard';
+import { PermissionsGuard } from 'src/common/guards/permission.guard';
+import { RequirePermission } from 'src/common/decorators/permission.decorator';
 
 @Controller('coupons')
 export class CouponsController {
   constructor(private readonly couponsService: CouponsService) {}
 
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('coupons', 'create', 'all')
   @Post()
   create(@Body() createCouponDto: CreateCouponDto) {
     return this.couponsService.create(createCouponDto);
   }
 
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('coupons', 'read', 'all')
   @Get()
   findAll() {
     return this.couponsService.findAll();
   }
 
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('coupons', 'read', 'all')
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.couponsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.couponsService.findOne(id);
   }
 
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('coupons', 'update', 'all')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCouponDto: UpdateCouponDto) {
-    return this.couponsService.update(+id, updateCouponDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCouponDto: UpdateCouponDto,
+  ) {
+    return this.couponsService.update(id, updateCouponDto);
   }
 
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('coupons', 'delete', 'all')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.couponsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.couponsService.remove(id);
   }
 }

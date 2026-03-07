@@ -5,9 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CurrenciesService {
-
-
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
     /* Create default currency if it doesn't exist */
@@ -22,9 +20,8 @@ export class CurrenciesService {
         isDefault: true,
         isActive: true,
       },
-    });  
+    });
   }
-
 
   create(createCurrencyDto: CreateCurrencyDto) {
     return 'This action adds a new currency';

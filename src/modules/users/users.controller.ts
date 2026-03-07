@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { RequirePermission } from 'src/common/decorators/permission.decorator';
 import { PermissionsGuard } from 'src/common/guards/permission.guard';
@@ -11,7 +23,7 @@ import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
@@ -49,10 +61,12 @@ export class UsersController {
   @ApiBearerAuth()
   @RequirePermission('users', 'update', 'all')
   @Patch(':id')
-  updateOwn(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
+  updateOwn(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.updateOwn(id, updateUserDto);
   }
-
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()

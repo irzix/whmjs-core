@@ -5,8 +5,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
-
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /*
     This function is called when the module is initialized.
@@ -15,10 +14,24 @@ export class RolesService implements OnModuleInit {
   */
 
   async onModuleInit() {
-    const resources = ['users', 'roles', 'permissions', 'products', 'orders', 'invoices', 'tickets', 'servers', 'payments', 'notifications'];
+    const resources = [
+      'users',
+      'roles',
+      'permissions',
+      'products',
+      'orders',
+      'invoices',
+      'tickets',
+      'servers',
+      'payments',
+      'notifications',
+    ];
 
     for (const resource of resources) {
-      for (const [action, scope] of [['all', 'all'], ['read', 'all']]) {
+      for (const [action, scope] of [
+        ['all', 'all'],
+        ['read', 'all'],
+      ]) {
         await this.prisma.permission.upsert({
           where: { resource_action_scope: { resource, action, scope } },
           update: {},
@@ -27,22 +40,33 @@ export class RolesService implements OnModuleInit {
       }
     }
 
-    const adminPerms = await this.prisma.permission.findMany({ where: { action: 'all' } });
-    const userPerms = await this.prisma.permission.findMany({ where: { action: 'read' } });
+    const adminPerms = await this.prisma.permission.findMany({
+      where: { action: 'all' },
+    });
+    const userPerms = await this.prisma.permission.findMany({
+      where: { action: 'read' },
+    });
 
     await this.prisma.role.upsert({
       where: { id: 10 },
       update: {},
-      create: { id: 10, name: 'SuperAdmin', permissions: { connect: adminPerms.map(p => ({ id: p.id })) } },
+      create: {
+        id: 10,
+        name: 'SuperAdmin',
+        permissions: { connect: adminPerms.map((p) => ({ id: p.id })) },
+      },
     });
 
     await this.prisma.role.upsert({
       where: { id: 100 },
       update: {},
-      create: { id: 100, name: 'User', permissions: { connect: userPerms.map(p => ({ id: p.id })) } },
+      create: {
+        id: 100,
+        name: 'User',
+        permissions: { connect: userPerms.map((p) => ({ id: p.id })) },
+      },
     });
   }
-
 
   /*
     This function creates a new role.
@@ -55,9 +79,9 @@ export class RolesService implements OnModuleInit {
       data: {
         name: createRoleDto.name,
         permissions: {
-          connect: createRoleDto.permissions?.map(p => ({ id: p.id })) ?? [],
-        }
-      }
+          connect: createRoleDto.permissions?.map((p) => ({ id: p.id })) ?? [],
+        },
+      },
     });
   }
 
@@ -68,10 +92,9 @@ export class RolesService implements OnModuleInit {
 
   findAll() {
     return this.prisma.role.findMany({
-      include: { permissions: true }
+      include: { permissions: true },
     });
   }
-
 
   /*
     This function returns a role by id.
@@ -82,7 +105,7 @@ export class RolesService implements OnModuleInit {
   findOne(id: number) {
     return this.prisma.role.findUnique({
       where: { id },
-      include: { permissions: true }
+      include: { permissions: true },
     });
   }
 
@@ -95,14 +118,17 @@ export class RolesService implements OnModuleInit {
 
   update(id: number, updateRoleDto: UpdateRoleDto) {
     return this.prisma.role.update({
-      where: { id }, data: {
+      where: { id },
+      data: {
         name: updateRoleDto.name,
-        ...updateRoleDto.permissions && {
+        ...(updateRoleDto.permissions && {
           permissions: {
-            set: updateRoleDto.permissions?.map((permission) => ({ id: permission.id })),
-          }
-        },
-      }
+            set: updateRoleDto.permissions?.map((permission) => ({
+              id: permission.id,
+            })),
+          },
+        }),
+      },
     });
   }
 

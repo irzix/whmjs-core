@@ -1,4 +1,4 @@
-import { Prisma } from "generated/prisma/client";
+import { Prisma } from 'generated/prisma/client';
 
 export const productSelect = {
   id: true,
@@ -15,6 +15,6 @@ export const productSelect = {
       id: true,
       code: true,
       symbol: true,
-    }
-  }
+    },
+  },
 } satisfies Prisma.ProductSelect;

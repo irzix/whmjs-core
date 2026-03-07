@@ -100,6 +100,10 @@ model Currency {
 model Order {
   id        Int       @id @default(autoincrement())
   total     Float
+  tax     Float
+  subtotal     Float
+  discount     Float
+  shipping     Float
   status OrderStatus @default(PENDING)
   currency   Currency @relation(fields: [currencyId], references: [id])
   currencyId Int
@@ -152,6 +156,10 @@ model CartItem {
 model Invoice {
   id        Int       @id @default(autoincrement())
   total     Float
+  tax     Float
+  subtotal     Float
+  discount     Float
+  shipping     Float
   status InvoiceStatus @default(PENDING)
   currency   Currency @relation(fields: [currencyId], references: [id])
   currencyId Int
@@ -163,8 +171,6 @@ model Invoice {
   organizationId Int
   dueDate DateTime?
   paidAt  DateTime?
-  tax   Tax? @relation(fields: [taxId], references: [id])
-  taxId Int?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -390,7 +396,6 @@ model Tax {
   rate      Float    // 20.00 = 20%
   country   String?
   isActive  Boolean  @default(true)
-  invoices  Invoice[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

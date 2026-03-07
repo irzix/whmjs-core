@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { RequirePermission } from 'src/common/decorators/permission.decorator';
 import { PermissionsGuard } from 'src/common/guards/permission.guard';
 import { AuthGuard } from '../auth/auth.guard';
@@ -8,7 +17,7 @@ import { RolesService } from './roles.service';
 
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) { }
+  constructor(private readonly rolesService: RolesService) {}
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @RequirePermission('roles', 'create', 'all')
@@ -30,7 +39,6 @@ export class RolesController {
   findOne(@Param('id') id: string) {
     return this.rolesService.findOne(+id);
   }
-
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @RequirePermission('roles', 'update', 'all')

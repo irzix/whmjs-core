@@ -10,10 +10,16 @@ export function setupSwagger(app: INestApplication) {
     .addBearerAuth()
     .build();
 
-  const document: OpenAPIObject = SwaggerModule.createDocument(app as any, config);
+  const document: OpenAPIObject = SwaggerModule.createDocument(
+    app as any,
+    config,
+  );
 
-  app.use('/api', apiReference({
-    spec: { content: document },
-    theme: 'kepler',
-  }));
+  app.use(
+    '/api',
+    apiReference({
+      spec: { content: document },
+      theme: 'kepler',
+    }),
+  );
 }

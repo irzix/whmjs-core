@@ -1,6 +1,6 @@
-import { Permission } from "generated/prisma/client";
+import { Permission } from 'generated/prisma/client';
 
 export class CreateRoleDto {
-    name: string;
-    permissions: Permission[];
+  name: string;
+  permissions: Permission[];
 }

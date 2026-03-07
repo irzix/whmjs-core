@@ -7,27 +7,27 @@ dotenv.config();
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-    constructor() {
-        const connectionString = process.env.DATABASE_URL;
+  constructor() {
+    const connectionString = process.env.DATABASE_URL;
 
-        if (!connectionString) {
-            throw new Error('DATABASE_URL env var is missing.');
-        }
-
-        super({
-            adapter: new PrismaPg({
-                connectionString,
-            }),
-        });
+    if (!connectionString) {
+      throw new Error('DATABASE_URL env var is missing.');
     }
 
-    async onModuleInit() {
-        try {
-            await this.$connect();
-            console.log('Database connected successfully');
-        } catch (error) {
-            console.error('Failed to connect to database:', error);
-            throw error;
-        }
+    super({
+      adapter: new PrismaPg({
+        connectionString,
+      }),
+    });
+  }
+
+  async onModuleInit() {
+    try {
+      await this.$connect();
+      console.log('Database connected successfully');
+    } catch (error) {
+      console.error('Failed to connect to database:', error);
+      throw error;
     }
+  }
 }

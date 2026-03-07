@@ -5,11 +5,15 @@ import { User } from 'generated/prisma/client';
 
 @Injectable()
 export class CartsService {
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(private readonly prisma: PrismaService) { }
-
+  /**
+   * Add a product to the cart
+   * @param cartData
+   * @param currentUser
+   * @returns
+   */
   async add(cartData: CartItemDto, currentUser: User) {
-
     const cartFind = await this.prisma.cart.findUnique({
       where: {
         organizationId: currentUser.organizationId,
@@ -30,25 +34,36 @@ export class CartsService {
       throw new NotFoundException('Cart not found');
     }
 
+    const product = await this.prisma.product.findUnique({
+      where: { id: cartData.productId },
+    });
+    if (!product || !product.isActive) {
+      throw new NotFoundException('Product not found');
+    }
+
     const CartItem = await this.prisma.cartItem.create({
       data: {
         cartId: cartId,
         productId: cartData.productId,
         quantity: cartData.quantity,
         config: cartData.config,
-      }
+      },
     });
 
     return CartItem;
   }
 
-  async findOne(currentUser : User) {
-
+  /**
+   * Find a cart by organization ID
+   * @param currentUser
+   * @returns
+   */
+  async findOne(currentUser: User) {
     const cart = await this.prisma.cart.findUnique({
       where: {
         organizationId: currentUser.organizationId,
       },
-      include: { items: { include: { product: true } } }
+      include: { items: { include: { product: true } } },
     });
 
     if (!cart) {
@@ -58,30 +73,59 @@ export class CartsService {
     return cart;
   }
 
-  async update(id: number, cartData: CartItemDto) {
-
-    const cart = await this.prisma.cartItem.update({
+  /**
+   * Update a cart item
+   * @param id
+   * @param cartData
+   * @returns
+   */
+  async update(id: number, cartData: CartItemDto, currentUser: User) {
+    const cartItem = await this.prisma.cartItem.findFirst({
       where: {
-        id: id,
+        id,
+        cart: { organizationId: currentUser.organizationId },
       },
+    });
+
+    if (!cartItem) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    return this.prisma.cartItem.update({
+      where: { id },
       data: {
         config: cartData.config,
         quantity: cartData.quantity,
-      }
-    });
-
-    return cart;
-  }
-
-  async remove(id: number) {
-    const deletedCart = await this.prisma.cartItem.delete({
-      where: {
-        id: id,
       },
     });
-    return deletedCart;
   }
 
+  /**
+   * Remove a cart item
+   * @param id
+   * @returns
+   */
+  async remove(id: number, currentUser: User) {
+    const cartItem = await this.prisma.cartItem.findFirst({
+      where: {
+        id,
+        cart: { organizationId: currentUser.organizationId },
+      },
+    });
+
+    if (!cartItem) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    return this.prisma.cartItem.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Remove all cart items
+   * @returns
+   */
   async removeAll() {
     await this.prisma.cartItem.deleteMany();
     await this.prisma.cart.deleteMany();

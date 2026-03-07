@@ -1,12 +1,19 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ForgotPasswordDto, LoginDto, RegisterDto, ResendVerificationEmailDto, ResetPasswordDto, VerifyEmailDto } from './auth.dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResendVerificationEmailDto,
+  ResetPasswordDto,
+  VerifyEmailDto,
+} from './auth.dto';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('register')
   register(@Body() body: RegisterDto) {

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FindProductDto } from './dto/find-product.dto';
@@ -8,13 +12,12 @@ import { hasPermission } from 'src/common/decorators/permission.decorator';
 
 @Injectable()
 export class ProductsService {
-
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   /**
    * Create a product
-   * @param createProductDto 
-   * @returns 
+   * @param createProductDto
+   * @returns
    */
 
   async create(createProductDto: CreateProductDto) {
@@ -26,16 +29,17 @@ export class ProductsService {
 
   /**
    * Find all products
-   * @param findProductDto 
-   * @param currentUser 
-   * @returns 
+   * @param findProductDto
+   * @param currentUser
+   * @returns
    */
 
   async findAll({ page, limit }: FindProductDto, currentUser?) {
     const pageNumber = page || 1;
     const pageSize = limit || 10;
 
-    const canView = currentUser && hasPermission(currentUser, 'products', 'read', 'all');
+    const canView =
+      currentUser && hasPermission(currentUser, 'products', 'read', 'all');
     const where = canView ? {} : { isActive: true };
 
     const [data, total] = await Promise.all([
@@ -53,14 +57,14 @@ export class ProductsService {
 
   /**
    * Find a product by ID
-   * @param id 
-   * @param currentUser 
-   * @returns 
+   * @param id
+   * @param currentUser
+   * @returns
    */
 
   async findOne(id: number, currentUser?) {
-
-    const canView = currentUser && hasPermission(currentUser, 'products', 'read', 'all');
+    const canView =
+      currentUser && hasPermission(currentUser, 'products', 'read', 'all');
     const where = canView ? {} : { isActive: true };
 
     const product = await this.prisma.product.findUnique({
@@ -68,25 +72,26 @@ export class ProductsService {
       select: productSelect,
     });
 
-    if(!product) throw new NotFoundException('Product not found');
+    if (!product) throw new NotFoundException('Product not found');
 
-    return product
-    
+    return product;
   }
 
   /**
    * Update a product
-   * @param id 
-   * @param updateProductDto 
-   * @param currentUser 
-   * @returns 
+   * @param id
+   * @param updateProductDto
+   * @param currentUser
+   * @returns
    */
 
   async update(id: number, updateProductDto: UpdateProductDto, currentUser?) {
-    
-    const canUpdate = currentUser && hasPermission(currentUser, 'products', 'update', 'all');
+    const canUpdate =
+      currentUser && hasPermission(currentUser, 'products', 'update', 'all');
     if (!canUpdate) {
-      throw new ForbiddenException('You do not have permission to update this product');
+      throw new ForbiddenException(
+        'You do not have permission to update this product',
+      );
     }
 
     return await this.prisma.product.update({
@@ -98,18 +103,21 @@ export class ProductsService {
 
   /**
    * Delete a product
-   * @param id 
-   * @param currentUser 
-   * @returns 
+   * @param id
+   * @param currentUser
+   * @returns
    */
   async remove(id: number, currentUser?) {
-    const canDelete = currentUser && hasPermission(currentUser, 'products', 'delete', 'all');
+    const canDelete =
+      currentUser && hasPermission(currentUser, 'products', 'delete', 'all');
     if (!canDelete) {
-      throw new ForbiddenException('You do not have permission to delete this product');
+      throw new ForbiddenException(
+        'You do not have permission to delete this product',
+      );
     }
 
     return await this.prisma.product.delete({
-      where: { id }
+      where: { id },
     });
   }
 }
