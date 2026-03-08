@@ -8,13 +8,18 @@ import { organizationSelect } from './selects/organization.select';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(createOrganizationDto: CreateOrganizationDto) {
+    const { users, currencyId, name } = createOrganizationDto;
     return this.prisma.organization.create({
       data: {
-        name: createOrganizationDto.name,
-        currency: { connect: { id: createOrganizationDto.currencyId } },
+        name,
+        currency: { connect: { id: currencyId } },
+        ...(users ? {
+              users: { connect: users.map((userId) => ({ id: userId })) },
+            }
+          : {}),
       },
       select: organizationSelect,
     });
@@ -62,11 +67,10 @@ export class OrganizationsService {
       data: {
         name,
         currencyId,
-        ...(users && {
-          users: {
-            set: users?.map((userId) => ({ id: userId })),
-          },
-        }),
+        ...(users? {
+              users: { connect: users.map((userId) => ({ id: userId })) },
+            }
+          : {}),
       },
       select: organizationSelect,
     });

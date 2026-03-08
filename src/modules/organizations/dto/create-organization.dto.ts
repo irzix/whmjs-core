@@ -15,5 +15,6 @@ export class CreateOrganizationDto {
   @ApiProperty({ description: 'Users id to update', type: [Number] })
   @IsOptional()
   @IsArray()
-  users: number[];
+  @Type(() => Number)
+  users?: number[];
 }
