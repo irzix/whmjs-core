@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateOrganizationDto {
   @ApiProperty({ description: 'Organization name' })
@@ -11,4 +11,9 @@ export class CreateOrganizationDto {
   @IsNumber()
   @Type(() => Number)
   currencyId: number;
+
+  @ApiProperty({ description: 'Users id to update', type: [Number] })
+  @IsOptional()
+  @IsArray()
+  users: number[];
 }
