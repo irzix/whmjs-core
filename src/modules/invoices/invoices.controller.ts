@@ -20,7 +20,7 @@ import { RequirePermission } from 'src/common/decorators/permission.decorator';
 
 @Controller('invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) { }
+  constructor(private readonly invoicesService: InvoicesService) {}
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()

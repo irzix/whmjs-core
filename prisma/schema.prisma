@@ -238,7 +238,6 @@ model PaymentGateway {
   isActive     Boolean  @default(false)
   config       Json?    // api keys
   transactions Transaction[]
-  createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 

@@ -37,6 +37,11 @@ export class CreateInvoiceDto {
   @Type(() => Number)
   currencyId: number;
 
+  @ApiProperty({ description: 'Gateway ID of the invoice' })
+  @IsNumber()
+  @Type(() => Number)
+  gatewayId: number;
+
   @ApiProperty({ description: 'Items of the invoice' })
   items: InvoiceItem[];
 

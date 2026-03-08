@@ -1,15 +1,15 @@
 import {
   Injectable,
-  NotFoundException,
-  BadRequestException,
+  NotFoundException
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { InvoiceStatus, User } from 'generated/prisma/client';
+import { hasPermission } from 'src/common/decorators/permission.decorator';
 import { CouponsCalculator } from '../coupons/coupons.calculator';
+import { PaymentGatewaysHandler } from '../payment-gateways/payment-gateways.handler';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { hasPermission } from 'src/common/decorators/permission.decorator';
-import { User } from 'generated/prisma/client';
 
 @Injectable()
 export class OrdersService {
@@ -17,7 +17,8 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly couponsCalculator: CouponsCalculator,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+    private readonly paymentGatewaysHandler: PaymentGatewaysHandler,
+  ) { }
 
   /**
    * Checkout the cart
@@ -79,10 +80,10 @@ export class OrdersService {
       /* Apply coupon */
       const coupon = createOrderDto.coupon
         ? await prisma.coupon.findUnique({
-            where: {
-              code: createOrderDto.coupon,
-            },
-          })
+          where: {
+            code: createOrderDto.coupon,
+          },
+        })
         : null;
       if (coupon) {
         const couponDiscount = await this.couponsCalculator.calculateDiscount(
@@ -169,7 +170,7 @@ export class OrdersService {
       });
 
       /* Payment Create */
-      const payment = await prisma.transaction.create({
+      const transaction = await prisma.transaction.create({
         data: {
           amount: total,
           currencyId: organization.currencyId,
@@ -180,10 +181,23 @@ export class OrdersService {
         },
       });
 
+
+      /* If the invoice is marked as PENDING, create a payment transaction */
+      let payment;
+      if (invoice.status === InvoiceStatus.PENDING) {
+        payment = await this.paymentGatewaysHandler.create({
+          amount: invoice.total,
+          currencyId: invoice.currencyId,
+          transactionId: transaction.id,
+          gatewayId: createOrderDto.gatewayId,
+        });
+      }
+
       return {
         order,
         invoice,
         payment,
+        transaction,
         totals: { subtotal, discount, tax, total },
       };
     });

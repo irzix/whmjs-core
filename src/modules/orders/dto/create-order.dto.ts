@@ -5,8 +5,7 @@ export class CreateOrderDto {
   @ApiProperty({ description: 'Gateway ID for payment', required: false })
   @IsInt()
   @IsPositive()
-  @IsOptional()
-  gatewayId?: number;
+  gatewayId: number;
 
   @ApiProperty({ description: 'Coupon code', required: false })
   @IsString()

@@ -22,6 +22,7 @@ import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { CurrenciesModule } from './modules/currencies/currencies.module';
 import { CartsModule } from './modules/carts/carts.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PaymentGatewaysModule } from './modules/payment-gateways/payment-gateways.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     CurrenciesModule,
     CartsModule,
     EventEmitterModule.forRoot(),
+    PaymentGatewaysModule,
   ],
   controllers: [AppController],
   providers: [AppService],

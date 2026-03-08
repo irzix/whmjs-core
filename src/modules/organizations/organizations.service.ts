@@ -8,7 +8,7 @@ import { organizationSelect } from './selects/organization.select';
 
 @Injectable()
 export class OrganizationsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(createOrganizationDto: CreateOrganizationDto) {
     const { users, currencyId, name } = createOrganizationDto;
@@ -16,7 +16,8 @@ export class OrganizationsService {
       data: {
         name,
         currency: { connect: { id: currencyId } },
-        ...(users ? {
+        ...(users
+          ? {
               users: { connect: users.map((userId) => ({ id: userId })) },
             }
           : {}),
@@ -67,7 +68,8 @@ export class OrganizationsService {
       data: {
         name,
         currencyId,
-        ...(users? {
+        ...(users
+          ? {
               users: { connect: users.map((userId) => ({ id: userId })) },
             }
           : {}),

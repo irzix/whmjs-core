@@ -76,7 +76,11 @@ hostito-core/
 │   │   ├── products/
 │   │   ├── orders/
 │   │   ├── invoices/
-│   │   ├── payments/
+│   │   ├── payment-gateways/
+│   │   │   ├── providers/
+│   │   │   │   ├── stripe/
+│   │   │   │   ├── paypal/
+│   │   │   │   └── crypto/
 │   │   ├── tickets/
 │   │   ├── notifications/
 │   │   ├── organizations/
@@ -117,15 +121,38 @@ hostito-core/
 
 ---
 
+## Payment Gateways
+
+Payment gateways are configured dynamically via database (CRUD). Each gateway stores its own API keys and config in a `config` JSON field.
+
+**Architecture:** `Controller → Handler → Factory → Provider`
+
+- **Factory** resolves the correct provider by gateway name
+- **Provider** handles gateway-specific logic (initiate, verify, webhook)
+- **Handler** orchestrates transaction/invoice status updates
+
+**Supported flows:**
+- Redirect-based (Stripe Checkout, ZarinPal-style) — `initiate` returns a URL, user pays, callback/webhook confirms
+- Webhook-based — gateway pushes events to `POST /payment-gateways/:gateway/webhook`
+- Callback verify — gateway redirects user to `GET/POST /payment-gateways/:id/verify`
+
+**Current providers:** Stripe (implemented), PayPal (stub), Crypto (stub)
+
+---
+
 ## Roadmap
 
 - [x] Project architecture
 - [x] Auth foundation (JWT, roles, permissions)
 - [x] Users module (basic CRUD)
 - [x] Products module (listing, pagination)
+- [x] Payment gateway architecture (factory/provider pattern)
+- [x] Stripe Checkout integration
+- [x] Webhook endpoint + signature verification
 - [ ] Plans management
-- [ ] Orders & invoices
-- [ ] Payment gateway integrations
+- [ ] Orders & invoices flow
+- [ ] PayPal provider implementation
+- [ ] Crypto provider implementation
 - [ ] Support ticket system
 - [ ] cPanel / DirectAdmin provisioning
 - [ ] Admin dashboard (React)
@@ -143,6 +170,12 @@ Set these in your `.env`:
 - PORT — server port (default: 3000)
 - JWT_SECRET — secret for JWT tokens
 - EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD, EMAIL_FROM — SMTP settings
+
+Stripe config is stored per-gateway in DB (`config` JSON field):
+- `secretKey` — Stripe secret API key
+- `webhookSecret` — Stripe webhook signing secret
+- `successUrl` — redirect URL after successful payment
+- `cancelUrl` — redirect URL if user cancels
 
 ---
 

@@ -21,7 +21,7 @@ import { OrganizationsService } from './organizations.service';
 
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private readonly organizationsService: OrganizationsService) { }
+  constructor(private readonly organizationsService: OrganizationsService) {}
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
@@ -35,7 +35,11 @@ export class OrganizationsController {
   @ApiBearerAuth()
   @RequirePermission('organizations', 'read', 'own')
   @Get()
-  findAll(@Query('page', ParseIntPipe) page: number, @Query('limit', ParseIntPipe) limit: number, @Req() req) {
+  findAll(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
+    @Req() req,
+  ) {
     return this.organizationsService.findAll(page, limit, req.user);
   }
 

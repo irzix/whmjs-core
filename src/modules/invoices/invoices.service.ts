@@ -5,14 +5,16 @@ import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { invoiceSelect } from './selects/invoices.select';
 import { hasPermission } from 'src/common/decorators/permission.decorator';
-import { User } from 'generated/prisma/client';
+import { InvoiceStatus, User } from 'generated/prisma/client';
+import { PaymentGatewaysHandler } from '../payment-gateways/payment-gateways.handler';
 
 @Injectable()
 export class InvoicesService {
   constructor(
     private prisma: PrismaService,
     private emitter: EventEmitter2,
-  ) { }
+    private paymentGatewaysHandler: PaymentGatewaysHandler,
+  ) {}
 
   /**
    * Creates a new invoice with associated items and a payment transaction.
@@ -36,7 +38,8 @@ export class InvoicesService {
         select: invoiceSelect,
       });
 
-      const payment = await prisma.transaction.create({
+      /* Create a payment transaction for the invoice */
+      const transaction = await prisma.transaction.create({
         data: {
           amount: createdInvoice.total,
           currencyId: createInvoiceDto.currencyId,
@@ -45,9 +48,19 @@ export class InvoicesService {
           type: 'DEBIT',
         },
       });
-      this.emitter.emit('transaction.create', payment);
 
-      return { invoice: createdInvoice, payment };
+      /* If the invoice is marked as PENDING, create a payment transaction */
+      let payment;
+      if(createInvoiceDto.status === InvoiceStatus.PENDING) {
+        payment = await this.paymentGatewaysHandler.create({
+          amount: createdInvoice.total,
+          currencyId: createInvoiceDto.currencyId,
+          transactionId: transaction.id,
+          gatewayId: createInvoiceDto.gatewayId,
+        });
+      }
+
+      return { invoice: createdInvoice, transaction, payment };
     });
 
     return result;
@@ -61,7 +74,6 @@ export class InvoicesService {
    * @returns A promise that resolves to an object containing the invoices, total count, page number, and limit.
    */
   async findAll(page: number, limit: number, user: User) {
-
     let where = {};
     if (!hasPermission(user, 'invoices', 'read', 'all')) {
       where = { organizationId: user.organizationId };

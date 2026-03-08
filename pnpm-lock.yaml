@@ -32,6 +32,9 @@ importers:
       '@nestjs/swagger':
         specifier: ^11.2.6
         version: 11.2.6(@nestjs/common@11.1.15(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.15)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+      '@paypal/paypal-server-sdk':
+        specifier: ^2.2.0
+        version: 2.2.0
       '@prisma/adapter-pg':
         specifier: ^7.4.2
         version: 7.4.2
@@ -74,6 +77,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      stripe:
+        specifier: ^20.4.1
+        version: 20.4.1(@types/node@22.19.13)
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@5.2.1)
@@ -186,6 +192,53 @@ packages:
   '@angular-devkit/schematics@19.2.19':
     resolution: {integrity: sha512-J4Jarr0SohdrHcb40gTL4wGPCQ952IMWF1G/MSAQfBAPvA9ZKApYhpxcY7PmehVePve+ujpus1dGsJ7dPxz8Kg==}
     engines: {node: ^18.19.1 || ^20.11.1 || >=22.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
+
+  '@apimatic/authentication-adapters@0.5.14':
+    resolution: {integrity: sha512-V7nhHShPrU8LfjKKHoVJNS50SveSL77CexVuS4aeQyXx99HwdQVJwl2MK0KAYM6/b2ufQbJ7Eee2fzQT0TVXSQ==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/axios-client-adapter@0.3.21':
+    resolution: {integrity: sha512-pr/XvAvH9FjbpwM+B7vHQxM7alocOX1kLNtSpXKW3yxTYxksF3ydnUuQ85rRbCoNpyfMOIjnRBCNUBzX5p2Hnw==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/convert-to-stream@0.1.9':
+    resolution: {integrity: sha512-C9NEKnDZoTRBRVeUGXVyAEmy6P5o+8oLwEckTKj0iBlExJLEXNt14nf4wxfzRO1KR8j5Bw8S6yStKCrQzcVERA==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/core-interfaces@0.2.14':
+    resolution: {integrity: sha512-PQmSU32ndxtDddMCjbkNY/sVvDwQAsHUGKrdG5aGVE7iw/qvB2Tm2zyCarOB5TlDr4OB+/tuLCVhji0icx6MHg==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/core@0.10.29':
+    resolution: {integrity: sha512-QhORiq0QbjlDMrw8ZZsAeG2DzE6QgGz5ukD5w2MOWE/3iIWnUDEROjmc2SfhyiGsE3GoEJ8cyhMMdjlOioP6ww==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/file-wrapper@0.3.9':
+    resolution: {integrity: sha512-Fh3UE7UPs2v4wkJdsD+uJFF147+7X0qkQfKBdeLZx6mZ5RmBJOBbS6ApvstQTV279YsHiiedKUZGJ6XLoVU+pQ==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/http-headers@0.3.8':
+    resolution: {integrity: sha512-ShvCuT39hYfBTI+H1I16m5i6XZCyUy2kQJ6Jhfj78TwsW5r6AyCbzW7DEro8GN2nNYRU1+E/hrgH6J85YmriOA==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/http-query@0.3.9':
+    resolution: {integrity: sha512-D6nqXcCR3P6iWbJ9uFXyyF2z1PEhTbGFbHNNuwF1NQ4tnThQk67DW9ou7/XcWi21zLh9MUchDWw9I0iE+5F2xA==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/json-bigint@1.2.0':
+    resolution: {integrity: sha512-+bmVzYMdZu0Ya5L+my4FXFUih54OvQA/qlZsFOYdOoostyUuB27UDrVWQs/WVCmS0ADdo5vTU0eeTrrBkHoySw==}
+
+  '@apimatic/oauth-adapters@0.4.18':
+    resolution: {integrity: sha512-MpRyBgKWg3yINQR85tBPmtU/596P0gdj4RmQ3s4D1LRuwDzqRO8GpRq74J8hxQ7vLQvH0OfGh6zzhr1KI4dQRQ==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/proxy@0.1.4':
+    resolution: {integrity: sha512-Vzgfu7wcA5aEJyj2SjQ00Tb06fhBof8gDo1kSsF6sZBm4QjdFywN5AMbQwhfFOKjHqcsNmJspdeqcdymUQ77jA==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
+
+  '@apimatic/schema@0.7.21':
+    resolution: {integrity: sha512-RCke4toXjA7fBRxQVa1GR+Lj9utVOEJ3voDI26dhk+bZuAac4UXPzkTEaIO3AIe/o8pcKCOkpNIzhzm57Cv2Qg==}
+    engines: {node: '>=14.15.0 || >=16.0.0'}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -858,6 +911,10 @@ packages:
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
+  '@paypal/paypal-server-sdk@2.2.0':
+    resolution: {integrity: sha512-ubdF3rkVT6msi+eXFiGSuJGO1nVR4BS60nb594KUdg+eB1nK9hSblmKnDWJb4PRroa5AR8R5vQWv3pHnzCEC6A==}
+    engines: {node: '>=14.17.0'}
+
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -1320,6 +1377,10 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  agent-base@7.1.4:
+    resolution: {integrity: sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ==}
+    engines: {node: '>= 14'}
+
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
     peerDependencies:
@@ -1415,6 +1476,9 @@ packages:
   aws-ssl-profiles@1.1.2:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
+
+  axios@1.13.6:
+    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
 
   babel-jest@30.2.0:
     resolution: {integrity: sha512-0YiBEOxWqKkSQWL9nNGGEgndoeL0ZpWrbLMNL5u/Kaxrli3Eaxlt3ZtIDktEvXt4L/R9r3ODr2zKwGM/2BjxVw==}
@@ -1749,9 +1813,15 @@ packages:
   destr@2.0.5:
     resolution: {integrity: sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA==}
 
+  detect-browser@5.3.0:
+    resolution: {integrity: sha512-53rsFbGdwMwlF7qvCt0ypLM5V5/Mbl0szB7GPN8y9NCcbknYOeVVXdrXEq+90IwAfrrzt6Hd+u2E2ntakICU8w==}
+
   detect-newline@3.1.0:
     resolution: {integrity: sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==}
     engines: {node: '>=8'}
+
+  detect-node@2.1.0:
+    resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
 
   dezalgo@1.0.4:
     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
@@ -2020,6 +2090,15 @@ packages:
   flatted@3.3.4:
     resolution: {integrity: sha512-3+mMldrTAPdta5kjX2G2J7iX4zxtnwpdA8Tr2ZSjkyPSanvbZAcy6flmtnXbEybHrDcU9641lxrMfFuUxVz9vA==}
 
+  follow-redirects@1.15.11:
+    resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+
   foreground-child@3.3.1:
     resolution: {integrity: sha512-gIXjKqtFuWEgzFRJA9WCQeSJLZDjgJUOMCMzxtvFq/37KojM1BFGufqsCy0r4qSQmYLsZYMeyRqzIWOMup03sw==}
     engines: {node: '>=14'}
@@ -2172,8 +2251,16 @@ packages:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
 
+  http-proxy-agent@7.0.2:
+    resolution: {integrity: sha512-T1gkAiYYDWYx3V5Bmyu7HcfcvL7mUrTWiM6yOfa3PIphViJ/gFPbvidQ+veqSOHci/PxBcDabeUNCzpOODJZig==}
+    engines: {node: '>= 14'}
+
   http-status-codes@2.3.0:
     resolution: {integrity: sha512-RJ8XvFvpPM/Dmc5SV+dC4y5PCeOhT3x1Hq0NU3rjGeg5a/CqlhZ7uudknPwZFz4aeAXDcbAyaeP7GAo9lvngtA==}
+
+  https-proxy-agent@7.0.6:
+    resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
+    engines: {node: '>= 14'}
 
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -2513,6 +2600,12 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash.defaultsdeep@4.6.1:
+    resolution: {integrity: sha512-3j8wdDzYuWO3lM3Reg03MuQR957t287Rpcxp1njpEa8oDrikb+FwGdW3n+FELh/A6qib6yPit0j/pv9G/yeAqA==}
+
+  lodash.flatmap@4.5.0:
+    resolution: {integrity: sha512-/OcpcAGWlrZyoHGeHh3cAoa6nGdX6QYtmzNP84Jqol6UEQQ2gIaU3H+0eICcjcKGl0/XF8LWOujNn9lffsnaOg==}
 
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
@@ -2975,6 +3068,9 @@ packages:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
 
+  proxy-from-env@1.1.0:
+    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
@@ -3225,6 +3321,15 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  stripe@20.4.1:
+    resolution: {integrity: sha512-axCguHItc8Sxt0HC6aSkdVRPffjYPV7EQqZRb2GkIa8FzWDycE7nHJM19C6xAIynH1Qp1/BHiopSi96jGBxT0w==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   strtok3@10.3.4:
     resolution: {integrity: sha512-KIy5nylvC5le1OdaaoCJ07L+8iQzJHGH6pWDuzS+d07Cu7n1MZ2x26P8ZKIWfbK02+XIL8Mp4RkWeqdUCrDMfg==}
     engines: {node: '>=18'}
@@ -3297,6 +3402,9 @@ packages:
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
+
+  tiny-warning@1.0.3:
+    resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
 
   tinyexec@1.0.2:
     resolution: {integrity: sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg==}
@@ -3646,6 +3754,94 @@ snapshots:
       rxjs: 7.8.1
     transitivePeerDependencies:
       - chokidar
+
+  '@apimatic/authentication-adapters@0.5.14':
+    dependencies:
+      '@apimatic/core-interfaces': 0.2.14
+      '@apimatic/http-headers': 0.3.8
+      '@apimatic/http-query': 0.3.9
+      tslib: 2.8.1
+
+  '@apimatic/axios-client-adapter@0.3.21':
+    dependencies:
+      '@apimatic/convert-to-stream': 0.1.9
+      '@apimatic/core-interfaces': 0.2.14
+      '@apimatic/file-wrapper': 0.3.9
+      '@apimatic/http-headers': 0.3.8
+      '@apimatic/http-query': 0.3.9
+      '@apimatic/json-bigint': 1.2.0
+      '@apimatic/proxy': 0.1.4
+      axios: 1.13.6
+      detect-browser: 5.3.0
+      detect-node: 2.1.0
+      form-data: 4.0.5
+      lodash.flatmap: 4.5.0
+      tiny-warning: 1.0.3
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
+  '@apimatic/convert-to-stream@0.1.9':
+    dependencies:
+      tslib: 2.8.1
+
+  '@apimatic/core-interfaces@0.2.14':
+    dependencies:
+      '@apimatic/file-wrapper': 0.3.9
+      '@apimatic/json-bigint': 1.2.0
+      tslib: 2.8.1
+
+  '@apimatic/core@0.10.29':
+    dependencies:
+      '@apimatic/convert-to-stream': 0.1.9
+      '@apimatic/core-interfaces': 0.2.14
+      '@apimatic/file-wrapper': 0.3.9
+      '@apimatic/http-headers': 0.3.8
+      '@apimatic/http-query': 0.3.9
+      '@apimatic/json-bigint': 1.2.0
+      '@apimatic/schema': 0.7.21
+      detect-browser: 5.3.0
+      detect-node: 2.1.0
+      form-data: 4.0.5
+      lodash.defaultsdeep: 4.6.1
+      lodash.flatmap: 4.5.0
+      tiny-warning: 1.0.3
+      tslib: 2.8.1
+
+  '@apimatic/file-wrapper@0.3.9':
+    dependencies:
+      tslib: 2.8.1
+
+  '@apimatic/http-headers@0.3.8':
+    dependencies:
+      tslib: 2.8.1
+
+  '@apimatic/http-query@0.3.9':
+    dependencies:
+      '@apimatic/core-interfaces': 0.2.14
+      '@apimatic/file-wrapper': 0.3.9
+      tslib: 2.8.1
+
+  '@apimatic/json-bigint@1.2.0': {}
+
+  '@apimatic/oauth-adapters@0.4.18':
+    dependencies:
+      '@apimatic/core-interfaces': 0.2.14
+      '@apimatic/file-wrapper': 0.3.9
+      '@apimatic/http-headers': 0.3.8
+      tslib: 2.8.1
+
+  '@apimatic/proxy@0.1.4':
+    dependencies:
+      http-proxy-agent: 7.0.2
+      https-proxy-agent: 7.0.6
+    transitivePeerDependencies:
+      - supports-color
+
+  '@apimatic/schema@0.7.21':
+    dependencies:
+      tslib: 2.8.1
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -4466,6 +4662,17 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
+  '@paypal/paypal-server-sdk@2.2.0':
+    dependencies:
+      '@apimatic/authentication-adapters': 0.5.14
+      '@apimatic/axios-client-adapter': 0.3.21
+      '@apimatic/core': 0.10.29
+      '@apimatic/oauth-adapters': 0.4.18
+      '@apimatic/schema': 0.7.21
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
@@ -5008,6 +5215,8 @@ snapshots:
 
   acorn@8.16.0: {}
 
+  agent-base@7.1.4: {}
+
   ajv-formats@2.1.1(ajv@8.18.0):
     optionalDependencies:
       ajv: 8.18.0
@@ -5088,6 +5297,14 @@ snapshots:
   asynckit@0.4.0: {}
 
   aws-ssl-profiles@1.1.2: {}
+
+  axios@1.13.6:
+    dependencies:
+      follow-redirects: 1.15.11
+      form-data: 4.0.5
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
 
   babel-jest@30.2.0(@babel/core@7.29.0):
     dependencies:
@@ -5422,7 +5639,11 @@ snapshots:
 
   destr@2.0.5: {}
 
+  detect-browser@5.3.0: {}
+
   detect-newline@3.1.0: {}
+
+  detect-node@2.1.0: {}
 
   dezalgo@1.0.4:
     dependencies:
@@ -5726,6 +5947,8 @@ snapshots:
 
   flatted@3.3.4: {}
 
+  follow-redirects@1.15.11: {}
+
   foreground-child@3.3.1:
     dependencies:
       cross-spawn: 7.0.6
@@ -5897,7 +6120,21 @@ snapshots:
       statuses: 2.0.2
       toidentifier: 1.0.1
 
+  http-proxy-agent@7.0.2:
+    dependencies:
+      agent-base: 7.1.4
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
+
   http-status-codes@2.3.0: {}
+
+  https-proxy-agent@7.0.6:
+    dependencies:
+      agent-base: 7.1.4
+      debug: 4.4.3
+    transitivePeerDependencies:
+      - supports-color
 
   human-signals@2.1.0: {}
 
@@ -6403,6 +6640,10 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
+  lodash.defaultsdeep@4.6.1: {}
+
+  lodash.flatmap@4.5.0: {}
+
   lodash.includes@4.3.0: {}
 
   lodash.isboolean@3.0.3: {}
@@ -6803,6 +7044,8 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
+  proxy-from-env@1.1.0: {}
+
   punycode@2.3.1: {}
 
   pure-rand@6.1.0: {}
@@ -7048,6 +7291,10 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
+  stripe@20.4.1(@types/node@22.19.13):
+    optionalDependencies:
+      '@types/node': 22.19.13
+
   strtok3@10.3.4:
     dependencies:
       '@tokenizer/token': 0.3.0
@@ -7125,6 +7372,8 @@ snapshots:
       '@istanbuljs/schema': 0.1.3
       glob: 7.2.3
       minimatch: 3.1.5
+
+  tiny-warning@1.0.3: {}
 
   tinyexec@1.0.2: {}
 
