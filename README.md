@@ -73,27 +73,43 @@ hostito-core/
 │   ├── modules/
 │   │   ├── auth/
 │   │   ├── users/
+│   │   ├── roles/
+│   │   ├── organizations/
 │   │   ├── products/
 │   │   ├── orders/
 │   │   ├── invoices/
-│   │   ├── payment-gateways/
-│   │   │   ├── providers/
-│   │   │   │   ├── stripe/
-│   │   │   │   ├── paypal/
-│   │   │   │   └── crypto/
-│   │   ├── tickets/
-│   │   ├── notifications/
-│   │   ├── organizations/
-│   │   ├── domains/
 │   │   ├── coupons/
-│   │   ├── servers/
-│   │   ├── services/
 │   │   ├── taxes/
+│   │   ├── payment-gateways/
+│   │   │   └── providers/
+│   │   │       ├── stripe/
+│   │   │       ├── paypal/
+│   │   │       └── crypto/
+│   │   ├── provisioning/
+│   │   │   └── providers/
+│   │   │       ├── cpanel/
+│   │   │       ├── directadmin/
+│   │   │       ├── proxmox/
+│   │   │       ├── pterodactyl/
+│   │   │       ├── vpn/
+│   │   │       └── license/
+│   │   ├── domains/
+│   │   │   └── providers/
+│   │   │       ├── spaceship/
+│   │   │       └── resellerclub/
+│   │   ├── notifications/
+│   │   │   └── providers/
+│   │   │       ├── smtp/
+│   │   │       └── sms/
+│   │   ├── tickets/
+│   │   ├── services/
 │   │   ├── announcements/
-│   │   ├── roles/
 │   │   ├── audit-logs/
 │   │   └── email-templates/
 │   └── common/
+│       ├── guards/
+│       ├── decorators/
+│       └── interfaces/
 ├── prisma/
 │   └── schema.prisma
 └── test/
