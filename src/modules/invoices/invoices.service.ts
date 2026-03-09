@@ -63,6 +63,8 @@ export class InvoicesService {
       return { invoice: createdInvoice, transaction, payment };
     });
 
+    this.emitter.emit('invoice.created', result.invoice);
+
     return result;
   }
 
@@ -140,7 +142,8 @@ export class InvoicesService {
     }
     const { total, tax, subtotal, discount, shipping, status, dueDate } =
       updateInvoiceDto;
-    return this.prisma.invoice.update({
+
+    const updatedInvoice = await this.prisma.invoice.update({
       where: { id },
       data: {
         total,
@@ -153,6 +156,10 @@ export class InvoicesService {
       },
       select: invoiceSelect,
     });
+
+    this.emitter.emit('invoice.updated', updatedInvoice);
+
+    return updatedInvoice;
   }
 
   /**
@@ -161,7 +168,7 @@ export class InvoicesService {
    * @returns A promise that resolves to the removed invoice.
    */
   async remove(id: number) {
-    return this.prisma.$transaction(async (prisma) => {
+    const invoice = await this.prisma.$transaction(async (prisma) => {
       const invoice = await prisma.invoice.findUnique({
         where: { id },
         include: { items: true, transactions: true },
@@ -177,5 +184,9 @@ export class InvoicesService {
       });
       return prisma.invoice.delete({ where: { id } });
     });
+
+    this.emitter.emit('invoice.removed', invoice);
+
+    return invoice;
   }
 }

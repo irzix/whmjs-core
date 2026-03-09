@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CartItemDto } from './dto/cart-item.dto';
 import { User } from 'generated/prisma/client';
+import { CouponsCalculator } from '../coupons/coupons.calculator';
 
 @Injectable()
 export class CartsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly couponsCalculator: CouponsCalculator) { }
 
   /**
    * Add a product to the cart
@@ -58,19 +59,83 @@ export class CartsService {
    * @param currentUser
    * @returns
    */
-  async findOne(currentUser: User) {
+  async findOne(currentUser: User, couponCode?: string) {
+
+
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: currentUser.organizationId },
+    });
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
     const cart = await this.prisma.cart.findUnique({
       where: {
         organizationId: currentUser.organizationId,
       },
       include: { items: { include: { product: true } } },
     });
+    if(!cart) {
+      return { total: 0, discount: 0, tax: 0, subtotal: 0 };
+    }
+
+    // Calculate the total price of the cart
+    let total = 0;
+    let discount = 0;
+    let tax = 0;
+    let subtotal = 0;
+    for (const item of cart.items) {
+      const product = await this.prisma.product.findUnique({
+        where: { id: item.productId },
+      });
+
+      if (product) {
+        subtotal += product.price * item.quantity;
+      }
+    }
+    total = subtotal;
+
+    /* check coupon */
+    if (couponCode) {
+      const coupon = await this.prisma.coupon.findUnique({
+        where: {
+          code: couponCode,
+        },
+      });
+      if (coupon) {
+        const couponDiscount = await this.couponsCalculator.calculateDiscount(
+          coupon,
+          subtotal,
+          organization.currencyId,
+        );
+        discount += couponDiscount;
+        total -= couponDiscount;
+      }
+    }
+
+    /* Apply tax */
+    const taxRates = await this.prisma.tax.findMany({
+      where: {
+        isActive: true,
+      },
+    });
+    const sumRate = taxRates.reduce((acc, t) => acc + t.rate, 0);
+    tax = total * (sumRate / 100);
+    total += tax;
+
+
 
     if (!cart) {
       throw new NotFoundException('Cart not found');
     }
 
-    return cart;
+    return {
+      ...cart,
+      total,
+      discount,
+      tax,
+      subtotal,
+    };
   }
 
   /**

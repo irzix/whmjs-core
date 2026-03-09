@@ -21,13 +21,13 @@ Just a clean, developer-friendly billing and client management system for hostin
 
 ## Features
 
-- 🧾 **Billing & Invoicing** — automated invoice generation, due date reminders
-- 👤 **Client Management** — admin panel, client portal, reseller support
-- 📦 **Product & Plan Management** — hosting plans, domains, VPS, licenses
-- 🎫 **Support Tickets** — built-in helpdesk with departments and priorities
-- 💳 **Payment Gateways** — Stripe, PayPal, crypto, manual payments
-- 🖥️ **Server Provisioning** — cPanel, DirectAdmin integration (coming soon)
-- 🔔 **Notifications** — email and SMS support
+- **Billing & Invoicing** — automated invoice generation, due date reminders
+- **Client Management** — admin panel, client portal, reseller support
+- **Product & Plan Management** — hosting plans, domains, VPS, licenses
+- **Support Tickets** — built-in helpdesk with departments and priorities
+- **Payment Gateways** — Stripe, PayPal, crypto, manual payments
+- **Server Provisioning** — cPanel, DirectAdmin integration (coming soon)
+- **Notifications** — email and SMS support
 
 ---
 
@@ -142,23 +142,18 @@ Payment gateways are configured dynamically via database (CRUD). Each gateway st
 
 ## Roadmap
 
-- [x] Project architecture
-- [x] Auth foundation (JWT, roles, permissions)
-- [x] Users module (basic CRUD)
-- [x] Products module (listing, pagination)
-- [x] Payment gateway architecture (factory/provider pattern)
-- [x] Stripe Checkout integration
-- [x] Webhook endpoint + signature verification
-- [ ] Plans management
-- [ ] Orders & invoices flow
-- [ ] PayPal provider implementation
-- [ ] Crypto provider implementation
-- [ ] Support ticket system
-- [ ] cPanel / DirectAdmin provisioning
-- [ ] Admin dashboard (React)
-- [ ] Client portal (React)
-- [ ] Multi-language support
-- [ ] Multi-currency support
+- [x] Auth
+- [x] Users
+- [x] Products
+- [x] Orders
+- [x] Invoices
+- [x] Payment Gateways
+- [ ] Coupons
+- [ ] Tickets
+- [ ] Servers
+- [ ] Services
+- [ ] Notifications
+- [ ] Multi-currency
 
 ---
 

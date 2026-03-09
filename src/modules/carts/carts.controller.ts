@@ -30,9 +30,9 @@ export class CartsController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Get('')
-  findOne(@Req() req) {
-    return this.cartsService.findOne(req.user);
+  @Post('')
+  findOne(@Req() req, @Body() couponCode?: string) {
+    return this.cartsService.findOne(req.user, couponCode);
   }
 
   @UseGuards(AuthGuard)
