@@ -372,27 +372,30 @@ enum TicketPriority {
 }
 
 
-model Server {
-  id          Int          @id @default(autoincrement())
-  name        String
-  hostname    String
-  ip          String
-  type        ServerType   // cpanel, directadmin, virtualizor
-  username    String?
-  password    String?      // encrypted
-  port        Int          @default(2087)
-  isActive    Boolean      @default(true)
-  maxAccounts Int          @default(100)
-  services    Service[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+model Provisioner {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique // cpanel, proxmox, v2ray, license
+  isActive Boolean  @default(false)
+  servers  Server[]
+  config   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum ServerType {
-  CPANEL
-  DIRECTADMIN
-  VIRTUALIZOR
-  CUSTOM
+model Server {
+  id            Int      @id @default(autoincrement())
+  name          String
+  hostname      String
+  ip            String
+  port          Int      @default(2087)
+  credentials   Json?
+  isActive      Boolean  @default(true)
+  maxAccounts   Int?
+  provisioner   Provisioner @relation(fields: [provisionerId], references: [id])
+  provisionerId Int
+  services      Service[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Tax {

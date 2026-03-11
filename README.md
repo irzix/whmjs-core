@@ -26,7 +26,7 @@ Just a clean, developer-friendly billing and client management system for hostin
 - **Product & Plan Management** — hosting plans, domains, VPS, licenses
 - **Support Tickets** — built-in helpdesk with departments and priorities
 - **Payment Gateways** — Stripe, PayPal, crypto, manual payments
-- **Server Provisioning** — cPanel, DirectAdmin integration (coming soon)
+- **Server Provisioners** — cPanel, DirectAdmin integration (coming soon)
 - **Notifications** — email and SMS support
 
 ---
@@ -85,7 +85,7 @@ hostito-core/
 │   │   │       ├── stripe/
 │   │   │       ├── paypal/
 │   │   │       └── crypto/
-│   │   ├── provisioning/
+│   │   ├── provisioners/
 │   │   │   └── providers/
 │   │   │       ├── cpanel/
 │   │   │       ├── directadmin/

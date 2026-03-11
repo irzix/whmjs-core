@@ -24,6 +24,7 @@ import { CartsModule } from './modules/carts/carts.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PaymentGatewaysModule } from './modules/payment-gateways/payment-gateways.module';
 import { BullModule } from '@nestjs/bullmq';
+import { ProvisionersModule } from './modules/provisioners/provisioners.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { BullModule } from '@nestjs/bullmq';
         url: process.env.REDIS_HOST_URL
       },
     }),
+    ProvisionersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
