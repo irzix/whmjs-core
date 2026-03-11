@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -14,7 +14,7 @@ export class InvoicesService {
     private prisma: PrismaService,
     private emitter: EventEmitter2,
     private paymentGatewaysHandler: PaymentGatewaysHandler,
-  ) {}
+  ) { }
 
   /**
    * Creates a new invoice with associated items and a payment transaction.
@@ -46,12 +46,13 @@ export class InvoicesService {
           invoiceId: createdInvoice.id,
           organizationId: createInvoiceDto.organizationId,
           type: 'DEBIT',
+          gatewayId: createInvoiceDto.gatewayId,
         },
       });
 
       /* If the invoice is marked as PENDING, create a payment transaction */
       let payment;
-      if(createInvoiceDto.status === InvoiceStatus.PENDING) {
+      if (createInvoiceDto.status === InvoiceStatus.PENDING) {
         payment = await this.paymentGatewaysHandler.create({
           amount: createdInvoice.total,
           currencyId: createInvoiceDto.currencyId,
@@ -66,6 +67,52 @@ export class InvoicesService {
     this.emitter.emit('invoice.created', result.invoice);
 
     return result;
+  }
+
+  /**
+   * Pay invoice
+   * @param id
+   * @param user
+   * @returns
+   */
+  async pay(id: number, gatewayId: number, user: User) {
+    const invoice = await this.prisma.invoice.findUnique({
+      where: {
+        id,
+        organizationId: user.organizationId,
+        status: InvoiceStatus.PENDING,
+      },
+    });
+    if (!invoice) {
+      throw new NotFoundException(`Invoice with ID ${id} not found`);
+    }
+
+    /* Create a payment transaction for the invoice */
+    const transaction = await this.prisma.transaction.create({
+      data: {
+        amount: invoice.total,
+        currencyId: invoice.currencyId,
+        invoiceId: invoice.id,
+        gatewayId: gatewayId,
+        organizationId: invoice.organizationId,
+        type: 'DEBIT',
+        status: 'PENDING',
+      },
+    });
+
+    /* Create a payment transaction for the invoice */
+    const payment = await this.paymentGatewaysHandler.create({
+      amount: invoice.total,
+      currencyId: invoice.currencyId,
+      transactionId: transaction.id,
+      gatewayId: gatewayId,
+    });
+
+    return {
+      invoice,
+      transaction,
+      payment,
+    };
   }
 
   /**

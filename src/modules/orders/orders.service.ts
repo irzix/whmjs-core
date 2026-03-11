@@ -245,6 +245,13 @@ export class OrdersService {
     };
   }
 
+  /**
+   * Pay order
+   * this method helps user to make payment for the order
+   * @param id
+   * @param user
+   * @returns
+   */
   async pay(id: number, user: User) {
     const order = await this.prisma.order.findUnique({
       where: {
@@ -291,6 +298,13 @@ export class OrdersService {
     };
   }
 
+  /**
+   * Find all orders
+   * @param page
+   * @param limit
+   * @param user
+   * @returns
+   */
   async findAll(page: number, limit: number, user: User) {
     let where: any = {};
 
@@ -322,6 +336,12 @@ export class OrdersService {
     };
   }
 
+  /**
+   * Find order by ID
+   * @param id
+   * @param user
+   * @returns
+   */
   async findOne(id: number, user: User) {
     let where: any = {};
 
@@ -358,6 +378,12 @@ export class OrdersService {
     });
   }
 
+
+  /**
+   * Remove order
+   * @param id
+   * @returns
+   */
   async remove(id: number) {
     return this.prisma.$transaction(async (prisma) => {
       const order = await prisma.order.findUnique({

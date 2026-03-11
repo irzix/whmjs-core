@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Req,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -20,7 +21,7 @@ import { RequirePermission } from 'src/common/decorators/permission.decorator';
 
 @Controller('invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) {}
+  constructor(private readonly invoicesService: InvoicesService) { }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
@@ -30,13 +31,19 @@ export class InvoicesController {
     return this.invoicesService.create(createInvoiceDto);
   }
 
+  @UseGuards(AuthGuard)
+  @Post(':id/pay')
+  pay(@Param('id', ParseIntPipe) id: number, @Body() payInvoiceDto: { gatewayId: number }, @Req() req) {
+    return this.invoicesService.pay(id, payInvoiceDto.gatewayId, req.user);
+  }
+
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'read', 'own')
   @Get()
   findAll(
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
     @Req() req,
   ) {
     return this.invoicesService.findAll(page, limit, req.user);
@@ -46,23 +53,23 @@ export class InvoicesController {
   @ApiBearerAuth()
   @RequirePermission('invoices', 'read', 'own')
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req) {
-    return this.invoicesService.findOne(+id, req.user);
+  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return this.invoicesService.findOne(id, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'update', 'all')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInvoiceDto: UpdateInvoiceDto) {
-    return this.invoicesService.update(+id, updateInvoiceDto);
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateInvoiceDto: UpdateInvoiceDto) {
+    return this.invoicesService.update(id, updateInvoiceDto);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'delete', 'all')
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.invoicesService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.invoicesService.remove(id);
   }
 }
