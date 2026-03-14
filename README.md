@@ -24,7 +24,6 @@ Just a clean, developer-friendly billing and client management system for hostin
 - **Billing & Invoicing** — automated invoice generation, due date reminders
 - **Client Management** — admin panel, client portal, reseller support
 - **Product & Plan Management** — hosting plans, domains, VPS, licenses
-- **Support Tickets** — built-in helpdesk with departments and priorities
 - **Payment Gateways** — Stripe, PayPal, crypto, manual payments
 - **Server Provisioners** — cPanel, DirectAdmin integration (coming soon)
 - **Notifications** — email and SMS support
@@ -101,7 +100,6 @@ hostito-core/
 │   │   │   └── providers/
 │   │   │       ├── smtp/
 │   │   │       └── sms/
-│   │   ├── tickets/
 │   │   ├── services/
 │   │   ├── announcements/
 │   │   ├── audit-logs/
@@ -164,12 +162,11 @@ Payment gateways are configured dynamically via database (CRUD). Each gateway st
 - [x] Orders
 - [x] Invoices
 - [x] Payment Gateways
-- [ ] Coupons
-- [ ] Tickets
+- [x] Coupons
 - [ ] Servers
 - [ ] Services
 - [ ] Notifications
-- [ ] Multi-currency
+- [x] Multi-currency
 
 ---
 

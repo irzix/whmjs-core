@@ -7,6 +7,8 @@ export const userSelect = {
   lastName: true,
   phone: true,
   status: true,
+  emailVerified: true,
+  roleId: true,
   role: {
     select: {
       id: true,
@@ -19,4 +21,5 @@ export const userSelect = {
       name: true,
     },
   },
+  organizationId: true,
 } satisfies Prisma.UserSelect;

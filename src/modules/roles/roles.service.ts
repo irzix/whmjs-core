@@ -5,7 +5,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RolesService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /*
     This function is called when the module is initialized.
@@ -21,7 +21,6 @@ export class RolesService implements OnModuleInit {
       'products',
       'orders',
       'invoices',
-      'tickets',
       'servers',
       'payments',
       'notifications',

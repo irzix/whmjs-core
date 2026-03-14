@@ -8,7 +8,6 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { ProductsModule } from './modules/products/products.module';
 import { ServersModule } from './modules/servers/servers.module';
-import { TicketsModule } from './modules/tickets/tickets.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { ServicesModule } from './modules/services/services.module';
@@ -33,7 +32,6 @@ import { ProvisionersModule } from './modules/provisioners/provisioners.module';
     ProductsModule,
     OrdersModule,
     InvoicesModule,
-    TicketsModule,
     ServersModule,
     NotificationsModule,
     PrismaModule,

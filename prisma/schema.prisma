@@ -24,7 +24,6 @@ model User {
   roleId    Int
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId Int
-  ticketReplies TicketReply[]
   auditLogs AuditLog[]
   status    Status   @default(ACTIVE)
   emailVerified       Boolean   @default(false)
@@ -70,7 +69,6 @@ model Organization {
   transactions Transaction[]
   domains  Domain[]
   services Service[]
-  tickets Ticket[]
   carts Cart[]
   auditLogs AuditLog[]
   currency   Currency @relation(fields: [currencyId], references: [id])
@@ -331,44 +329,6 @@ enum ServiceStatus {
   ACTIVE
   SUSPENDED
   CANCELLED
-}
-
-model Ticket {
-  id             Int           @id @default(autoincrement())
-  subject        String
-  status         TicketStatus  @default(OPEN)
-  priority       TicketPriority @default(MEDIUM)
-  department     String?
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  organizationId Int
-  replies        TicketReply[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-}
-
-model TicketReply {
-  id        Int      @id @default(autoincrement())
-  message   String
-  isStaff   Boolean  @default(false)
-  ticket    Ticket   @relation(fields: [ticketId], references: [id])
-  ticketId  Int
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  createdAt DateTime @default(now())
-}
-
-enum TicketStatus {
-  OPEN
-  ANSWERED
-  CUSTOMER_REPLY
-  CLOSED
-}
-
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
 }
 
 

@@ -16,7 +16,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-  ) {}
+  ) { }
 
   /**
    * Register a new user
@@ -44,6 +44,10 @@ export class AuthService {
 
     const { email, firstName, lastName } = registerDto;
 
+    /* Check if user already exists */
+    const userExists = await this.prisma.user.findUnique({ where: { email } });
+    if (userExists) throw new UnauthorizedException('email already exists');
+
     /* Create user */
     const user = await this.prisma.user.create({
       data: {
@@ -57,12 +61,20 @@ export class AuthService {
       },
     });
 
-    return this.signToken(
-      user.id,
-      user.email,
-      user.roleId,
-      user.organizationId,
-    );
+    return {
+      user: {
+        ...user,
+        password: undefined,
+        verificationToken: undefined,
+        resetPasswordToken: undefined,
+      },
+      access_token: this.signToken(
+        user.id,
+        user.email,
+        user.roleId,
+        user.organizationId,
+      ),
+    };
   }
 
   /**
@@ -78,12 +90,21 @@ export class AuthService {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    return this.signToken(
-      user.id,
-      user.email,
-      user.roleId,
-      user.organizationId,
-    );
+
+    return {
+      user: {
+        ...user,
+        password: undefined,
+        verificationToken: undefined,
+        resetPasswordToken: undefined,
+      },
+      access_token: this.signToken(
+        user.id,
+        user.email,
+        user.roleId,
+        user.organizationId,
+      ),
+    };
   }
 
   /**
@@ -100,14 +121,12 @@ export class AuthService {
     roleId: number,
     organizationId: number,
   ) {
-    return {
-      access_token: this.jwt.sign({
-        sub: userId,
-        email,
-        roleId,
-        organizationId,
-      }),
-    };
+    return this.jwt.sign({
+      sub: userId,
+      email,
+      roleId,
+      organizationId,
+    });
   }
 
   /**
@@ -124,6 +143,9 @@ export class AuthService {
         firstName: true,
         lastName: true,
         status: true,
+        emailVerified: true,
+        roleId: true,
+        organizationId: true,
         role: {
           select: {
             id: true,
