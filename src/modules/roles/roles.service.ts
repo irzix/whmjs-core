@@ -17,6 +17,8 @@ export class RolesService implements OnModuleInit {
     const resources = [
       'users',
       'roles',
+      'organizations',
+      'payment-gateways',
       'permissions',
       'products',
       'orders',
@@ -73,12 +75,12 @@ export class RolesService implements OnModuleInit {
     @returns The created role.
   */
 
-  create(createRoleDto: CreateRoleDto) {
-    return this.prisma.role.create({
+  async create(createRoleDto: CreateRoleDto) {
+    return await this.prisma.role.create({
       data: {
         name: createRoleDto.name,
         permissions: {
-          connect: createRoleDto.permissions?.map((p) => ({ id: p.id })) ?? [],
+          connect: createRoleDto.permissions?.map((id) => ({ id })) ?? [],
         },
       },
     });
@@ -89,8 +91,8 @@ export class RolesService implements OnModuleInit {
     @returns An array of roles.
   */
 
-  findAll() {
-    return this.prisma.role.findMany({
+  async findAll() {
+    return await this.prisma.role.findMany({
       include: { permissions: true },
     });
   }
@@ -101,8 +103,8 @@ export class RolesService implements OnModuleInit {
     @returns The role with the given id.
   */
 
-  findOne(id: number) {
-    return this.prisma.role.findUnique({
+  async findOne(id: number) {
+    return await this.prisma.role.findUnique({
       where: { id },
       include: { permissions: true },
     });
@@ -115,15 +117,15 @@ export class RolesService implements OnModuleInit {
     @returns The updated role.
   */
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return this.prisma.role.update({
+  async update(id: number, updateRoleDto: UpdateRoleDto) {
+    return await this.prisma.role.update({
       where: { id },
       data: {
         name: updateRoleDto.name,
         ...(updateRoleDto.permissions && {
           permissions: {
-            set: updateRoleDto.permissions?.map((permission) => ({
-              id: permission.id,
+            set: updateRoleDto.permissions?.map((pId) => ({
+              id: pId,
             })),
           },
         }),
@@ -137,7 +139,16 @@ export class RolesService implements OnModuleInit {
     @returns The removed role.
   */
 
-  remove(id: number) {
-    return this.prisma.role.delete({ where: { id } });
+  async remove(id: number) {
+    return await this.prisma.role.delete({ where: { id } });
+  }
+
+  /*
+    This function returns all permissions.
+    @returns An array of permissions.
+  */
+
+  async findAllPermissions() {
+    return await this.prisma.permission.findMany();
   }
 }
