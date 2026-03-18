@@ -11,68 +11,111 @@ import {
   ParseIntPipe,
   Query,
 } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { PayOrderDto } from './dto/pay-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { PermissionsGuard } from 'src/common/guards/permission.guard';
 import { RequirePermission } from 'src/common/decorators/permission.decorator';
+import { OrderEntity } from './entities/order.entity';
 
+@ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) {}
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Post('checkout')
-  checkout(@Body() createOrderDto: CreateOrderDto, @Req() req) {
-    return this.ordersService.checkout(createOrderDto, req.user);
+  @ApiOperation({ summary: 'Checkout and create a new order' })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created successfully',
+    type: OrderEntity,
+  })
+  async checkout(@Body() createOrderDto: CreateOrderDto, @Req() req) {
+    return await this.ordersService.checkout(createOrderDto, req.user);
   }
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Post(':id/pay')
-  pay(@Param('id', ParseIntPipe) id: number, @Body() payOrderDto: { gatewayId: number }, @Req() req) {
-    return this.ordersService.pay(id, payOrderDto.gatewayId, req.user);
+  @ApiOperation({ summary: 'Initiate payment for an order' })
+  @ApiResponse({ status: 200, description: 'Payment initiated' })
+  async pay(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payOrderDto: PayOrderDto,
+    @Req() req,
+  ) {
+    return await this.ordersService.pay(id, payOrderDto.gatewayId, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('orders', 'read', 'own')
   @Get()
-  findAll(
+  @ApiOperation({ summary: 'Get all orders' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all orders',
+    type: [OrderEntity],
+  })
+  async findAll(
     @Req() req,
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number,
   ) {
-    return this.ordersService.findAll(page, limit, req.user);
+    return await this.ordersService.findAll(page, limit, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('orders', 'read', 'own')
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    return this.ordersService.findOne(id, req.user);
+  @ApiOperation({ summary: 'Get an order by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a single order',
+    type: OrderEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return await this.ordersService.findOne(id, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('orders', 'update', 'all')
   @Patch(':id')
-  update(
+  @ApiOperation({ summary: 'Update an order by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Order updated successfully',
+    type: OrderEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
-    return this.ordersService.update(id, updateOrderDto);
+    return await this.ordersService.update(id, updateOrderDto);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('orders', 'delete', 'all')
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.ordersService.remove(id);
+  @ApiOperation({ summary: 'Delete an order by ID' })
+  @ApiResponse({ status: 200, description: 'Order deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Order not found' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.ordersService.remove(id);
   }
 }

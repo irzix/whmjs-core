@@ -11,65 +11,112 @@ import {
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
+import { PayInvoiceDto } from './dto/pay-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { PermissionsGuard } from 'src/common/guards/permission.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
 import { RequirePermission } from 'src/common/decorators/permission.decorator';
+import { InvoiceEntity } from './entities/invoice.entity';
 
+@ApiTags('Invoices')
 @Controller('invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) { }
+  constructor(private readonly invoicesService: InvoicesService) {}
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'create', 'all')
   @Post()
-  create(@Body() createInvoiceDto: CreateInvoiceDto) {
-    return this.invoicesService.create(createInvoiceDto);
+  @ApiOperation({ summary: 'Create a new invoice' })
+  @ApiResponse({
+    status: 201,
+    description: 'Invoice created successfully',
+    type: InvoiceEntity,
+  })
+  async create(@Body() createInvoiceDto: CreateInvoiceDto) {
+    return await this.invoicesService.create(createInvoiceDto);
   }
 
   @UseGuards(AuthGuard)
+  @ApiBearerAuth()
   @Post(':id/pay')
-  pay(@Param('id', ParseIntPipe) id: number, @Body() payInvoiceDto: { gatewayId: number }, @Req() req) {
-    return this.invoicesService.pay(id, payInvoiceDto.gatewayId, req.user);
+  @ApiOperation({ summary: 'Initiate payment for an invoice' })
+  @ApiResponse({ status: 200, description: 'Payment initiated' })
+  async pay(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payInvoiceDto: PayInvoiceDto,
+    @Req() req,
+  ) {
+    return await this.invoicesService.pay(id, payInvoiceDto.gatewayId, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'read', 'own')
   @Get()
-  findAll(
+  @ApiOperation({ summary: 'Get all invoices' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all invoices',
+    type: [InvoiceEntity],
+  })
+  async findAll(
     @Query('page', ParseIntPipe) page: number,
     @Query('limit', ParseIntPipe) limit: number,
     @Req() req,
   ) {
-    return this.invoicesService.findAll(page, limit, req.user);
+    return await this.invoicesService.findAll(page, limit, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'read', 'own')
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
-    return this.invoicesService.findOne(id, req.user);
+  @ApiOperation({ summary: 'Get an invoice by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a single invoice',
+    type: InvoiceEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return await this.invoicesService.findOne(id, req.user);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'update', 'all')
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateInvoiceDto: UpdateInvoiceDto) {
-    return this.invoicesService.update(id, updateInvoiceDto);
+  @ApiOperation({ summary: 'Update an invoice by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Invoice updated successfully',
+    type: InvoiceEntity,
+  })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateInvoiceDto: UpdateInvoiceDto,
+  ) {
+    return await this.invoicesService.update(id, updateInvoiceDto);
   }
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
   @RequirePermission('invoices', 'delete', 'all')
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.invoicesService.remove(id);
+  @ApiOperation({ summary: 'Delete an invoice by ID' })
+  @ApiResponse({ status: 200, description: 'Invoice deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Invoice not found' })
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.invoicesService.remove(id);
   }
 }
