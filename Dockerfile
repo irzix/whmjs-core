@@ -1,5 +1,5 @@
 # ======================== BASE ========================
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
@@ -20,13 +20,8 @@ COPY . .
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/generated ./generated
 
-# Build NestJS
 RUN pnpm run build
 
-# Fix: force Node.js to treat compiled Prisma files as CommonJS
-RUN echo '{"type":"commonjs"}' > dist/generated/package.json
-
-# Remove dev dependencies
 RUN pnpm prune --prod
 
 # ======================== PRODUCTION ==================
@@ -37,7 +32,7 @@ WORKDIR /app
 COPY package.json ./
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/generated ./generated
 COPY prisma ./prisma/
 
-CMD ["node", "dist/src/main"]
+# Reference the compiled .js file explicitly
+CMD ["node", "dist/src/main.js"]
