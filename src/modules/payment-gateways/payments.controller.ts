@@ -12,7 +12,6 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
 import { PaymentGatewaysHandler } from './payment-gateways.handler';
 import { PaymentGatewaysService } from './payment-gateways.service';
 import { AuthGuard } from '../auth/auth.guard';
@@ -57,8 +56,8 @@ export class PaymentsController {
     @ApiResponse({ status: 200, description: 'Webhook acknowledged' })
     async webhook(
         @Param('gateway') gateway: string,
-        @Headers() headers: any,
-        @Req() req: RawBodyRequest<Request>,
+        @Headers() headers,
+        @Req() req,
     ) {
         return await this.paymentGatewaysHandler.webhook(gateway, headers, req.rawBody);
     }
