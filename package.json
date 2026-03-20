@@ -91,8 +91,6 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "moduleNameMapper": {
-      "^generated/prisma/(.*)$": "<rootDir>/../generated/prisma/$1",
-      "^generated/prisma$": "<rootDir>/../generated/prisma",
       "^src/(.*)$": "<rootDir>/$1"
     },
     "collectCoverageFrom": [
