@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAuditLogsDto } from './dto/find-audit-logs.dto';
 
 @Injectable()
 export class AuditLogsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue('audit-logs') private readonly auditQueue: Queue,
+  ) {}
 
   async create(data: {
     action: string;
@@ -17,13 +22,22 @@ export class AuditLogsService {
     userId?: number;
     organizationId?: number;
   }) {
-    return await this.prisma.auditLog.create({
-      data,
+    await this.auditQueue.add('log', data, {
+      removeOnComplete: true,
+      removeOnFail: false,
     });
+    return { status: 'queued' };
   }
 
   async findAll(query: FindAuditLogsDto) {
-    const { page = 1, limit = 10, action, entity, userId, organizationId } = query;
+    const {
+      page = 1,
+      limit = 10,
+      action,
+      entity,
+      userId,
+      organizationId,
+    } = query;
     const skip = (page - 1) * limit;
 
     const where = {
@@ -61,5 +75,4 @@ export class AuditLogsService {
 
     return { data, total, page, limit };
   }
-
 }
