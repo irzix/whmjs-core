@@ -16,8 +16,8 @@ import { PaymentGatewaysHandler } from './payment-gateways.handler';
     PaymentGatewaysHandler,
     StripeProvider,
     PaypalProvider,
-    CryptoProvider
+    CryptoProvider,
   ],
-  exports: [PaymentGatewaysHandler]
+  exports: [PaymentGatewaysHandler],
 })
-export class PaymentGatewaysModule { }
+export class PaymentGatewaysModule {}

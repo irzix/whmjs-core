@@ -5,43 +5,32 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './auth.dto';
-import { NotificationsHandler } from '../notifications/notifications.handler';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private notificationHandler: NotificationsHandler,
+    private eventEmitter: EventEmitter2,
   ) { }
 
   /**
    * Register a new user
-   * @param registerDto
-   * @returns
    */
   async register(registerDto: RegisterDto) {
     const hashed = await bcrypt.hash(registerDto.password, 10);
 
-    // TODO: Organization invite code for user
-
-    /* Create organization if it doesn't exist */
     const defaultCurrency = await this.prisma.currency.findFirst({
       where: { isDefault: true },
     });
     if (!defaultCurrency) {
       throw new NotFoundException('Default currency not found');
     }
-    const organization = await this.prisma.organization.create({
-      data: {
-        name: `${(registerDto.lastName || registerDto.email.split('@')[0]).trim()}'s Organization`,
-        currency: { connect: { id: defaultCurrency.id } },
-      },
-    });
 
     const { email, firstName, lastName } = registerDto;
 
@@ -49,28 +38,36 @@ export class AuthService {
     const userExists = await this.prisma.user.findUnique({ where: { email } });
     if (userExists) throw new UnauthorizedException('email already exists');
 
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationToken = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
+
+    /* Create organization */
+    const organization = await this.prisma.organization.create({
+      data: {
+        name: `${(lastName || email.split('@')[0]).trim()}'s Organization`,
+        currency: { connect: { id: defaultCurrency.id } },
+      },
+    });
 
     /* Create user */
     const user = await this.prisma.user.create({
       data: {
-        email: email,
+        email,
         password: hashed,
-        firstName: firstName,
-        lastName: lastName,
+        firstName,
+        lastName,
         role: { connect: { name: 'User' } },
         organization: { connect: { id: organization.id } },
         verificationToken,
       },
     });
 
-    await this.notificationHandler.send({
-      type: 'email',
-      to: email,
-      template: 'verify_email',
-      data: {
-        verificationToken,
-      },
+    this.eventEmitter.emit('auth.registered', {
+      email,
+      verificationToken,
+      userId: user.id,
+      organizationId: organization.id,
     });
 
     return {
@@ -91,9 +88,6 @@ export class AuthService {
 
   /**
    * Login a user
-   * @param email
-   * @param password
-   * @returns
    */
   async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -101,7 +95,6 @@ export class AuthService {
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
-
 
     return {
       user: {
@@ -119,14 +112,6 @@ export class AuthService {
     };
   }
 
-  /**
-   * Sign a JWT token
-   * @param userId
-   * @param email
-   * @param roleId
-   * @param organizationId
-   * @returns
-   */
   private signToken(
     userId: number,
     email: string,
@@ -143,8 +128,6 @@ export class AuthService {
 
   /**
    * Get user details
-   * @param userId
-   * @returns
    */
   async getMe(userId: number) {
     const user = await this.prisma.user.findUnique({
@@ -159,16 +142,10 @@ export class AuthService {
         roleId: true,
         organizationId: true,
         role: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
         organization: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     });
@@ -178,15 +155,12 @@ export class AuthService {
 
   /**
    * Reset user password
-   * @param token
-   * @param password
-   * @returns
    */
   async resetPassword(token: string, password: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpiry: { gt: new Date() }
+        resetPasswordExpiry: { gt: new Date() },
       },
     });
 
@@ -196,7 +170,9 @@ export class AuthService {
 
     const isSame = await bcrypt.compare(password, user.password);
     if (isSame) {
-      throw new UnauthorizedException('The new password must not be the same as the old one');
+      throw new UnauthorizedException(
+        'The new password must not be the same as the old one',
+      );
     }
 
     const hashed = await bcrypt.hash(password, 10);
@@ -217,7 +193,10 @@ export class AuthService {
     if (!user) return { message: 'Password reset email sent' };
 
     // Simple cooldown
-    if (user.resetPasswordExpiry && user.resetPasswordExpiry.getTime() > Date.now() + 59 * 60000) {
+    if (
+      user.resetPasswordExpiry &&
+      user.resetPasswordExpiry.getTime() > Date.now() + 59 * 60000
+    ) {
       throw new HttpException('Please wait before requesting again', 429);
     }
 
@@ -227,30 +206,21 @@ export class AuthService {
       where: { id: user.id },
       data: {
         resetPasswordToken: token,
-        resetPasswordExpiry: new Date(Date.now() + 60 * 60000), // 1 hour
+        resetPasswordExpiry: new Date(Date.now() + 60 * 60000),
       },
     });
 
-    const sendMail = await this.notificationHandler.send({
-      type: 'email',
-      to: email,
-      template: 'reset_password',
-      data: {
-        token,
-      },
+    this.eventEmitter.emit('auth.forgot-password', {
+      email,
+      token,
+      userId: user.id,
     });
-
-    if (!sendMail.status) {
-      throw new HttpException('Email system error', 500);
-    }
 
     return { message: 'Password reset email sent' };
   }
 
   /**
    * Verify user email
-   * @param token
-   * @returns
    */
   async verifyEmail(token: string) {
     const user = await this.prisma.user.findFirst({
@@ -263,14 +233,11 @@ export class AuthService {
       data: { emailVerified: true, verificationToken: null },
     });
 
-    // Send welcome email
-    await this.notificationHandler.send({
-      type: 'email',
-      to: user.email,
-      template: 'welcome',
-      data: {
-        firstName: user.firstName,
-      },
+    this.eventEmitter.emit('auth.verified', {
+      email: user.email,
+      firstName: user.firstName,
+      userId: user.id,
+      organizationId: user.organizationId,
     });
 
     return { message: 'Email verified successfully' };
@@ -278,32 +245,26 @@ export class AuthService {
 
   /**
    * Resend verification email
-   * @param email
-   * @returns
    */
   async resendVerificationEmail(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) throw new NotFoundException('User not found');
     if (user.emailVerified) return { message: 'Email already verified' };
 
-    const verificationToken = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationToken = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: { verificationToken },
     });
 
-    const sendMail = await this.notificationHandler.send({
-      type: 'email',
-      to: email,
-      template: 'verify_email',
-      data: {
-        verificationToken,
-      },
+    this.eventEmitter.emit('auth.resend-verification', {
+      email,
+      verificationToken,
+      userId: user.id,
     });
-
-    if (!sendMail.status) {
-      throw new HttpException('Email system', 500);
-    }
 
     return { message: 'Verification email sent' };
   }
