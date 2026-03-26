@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -22,7 +23,13 @@ export class SettingsController {
   @RequirePermission('settings', 'read', 'all')
   @Get()
   @ApiOperation({ summary: 'Get all settings (Admin only)' })
-  @ApiResponse({ status: 200, type: [SettingEntity] })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all settings',
+    type: [SettingEntity],
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — insufficient permissions' })
   async get() {
     return await this.settingsService.get();
   }
@@ -31,7 +38,7 @@ export class SettingsController {
   @ApiOperation({ summary: 'Get public settings (Unauthenticated)' })
   @ApiResponse({
     status: 200,
-    description: 'Key-Value pair object of public settings',
+    description: 'Key-value pair object of public settings',
   })
   async getPublic() {
     return await this.settingsService.getPublic();
@@ -42,7 +49,14 @@ export class SettingsController {
   @RequirePermission('settings', 'update', 'all')
   @Patch(':key')
   @ApiOperation({ summary: 'Update or create a setting by its key' })
-  @ApiResponse({ status: 200, type: SettingEntity })
+  @ApiParam({ name: 'key', example: 'site_name', description: 'Setting key' })
+  @ApiResponse({
+    status: 200,
+    description: 'Setting updated successfully',
+    type: SettingEntity,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden — insufficient permissions' })
   async update(
     @Param('key') key: string,
     @Body() updateSettingDto: UpdateSettingDto,

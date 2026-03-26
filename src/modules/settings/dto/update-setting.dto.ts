@@ -1,18 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsBoolean, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
 
 export class UpdateSettingDto {
-  @ApiProperty({ example: 'site_name' })
-  @IsString()
+  @ApiProperty({
+    example: 'My Hosting Company',
+    description: 'Setting value (stored as JSON)',
+  })
   @IsNotEmpty()
-  key: string;
+  value: any;
 
-  @ApiProperty({ example: 'My Hosting Company' })
-  @IsString()
-  @IsNotEmpty()
-  value: string;
-
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Whether this setting is publicly accessible',
+  })
   @IsBoolean()
   @IsOptional()
   isPublic?: boolean;

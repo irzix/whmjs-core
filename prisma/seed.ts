@@ -176,7 +176,33 @@ async function main() {
     });
   }
 
-  // --- 8. Settings ---
+  // --- 8. Notification Providers ---
+  const notificationProviders = [
+    {
+      name: 'smtp',
+      config: {
+        host: 'smtp.example.com',
+        port: 587,
+        user: 'user@example.com',
+        password: 'your-password',
+        from: 'noreply@example.com',
+      },
+    },
+  ];
+
+  for (const provider of notificationProviders) {
+    await prisma.notificationProvider.upsert({
+      where: { name: provider.name },
+      update: {},
+      create: {
+        name: provider.name,
+        isActive: true,
+        config: provider.config,
+      },
+    });
+  }
+
+  // --- 9. Settings ---
   const defaultSettings: any[] = [
     { key: 'site_name', value: 'Hostito', isPublic: true },
     { key: 'maintenance_mode', value: 'false', isPublic: true },

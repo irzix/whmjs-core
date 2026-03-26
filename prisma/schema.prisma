@@ -425,6 +425,27 @@ model Announcement {
   updatedAt DateTime @updatedAt
 }
 
+model NotificationProvider {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // smtp, sms, push
+  isActive  Boolean  @default(false)
+  config    Json?
+  logs      NotificationLog[]
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationLog {
+  id         Int      @id @default(autoincrement())
+  type       String   // email, sms, push
+  to         String
+  subject    String?
+  status     String   // sent, failed
+  error      String?
+  provider   NotificationProvider @relation(fields: [providerId], references: [id])
+  providerId Int
+  createdAt  DateTime @default(now())
+}
+
 model NotificationTemplate {
   id        Int      @id @default(autoincrement())
   name      String   @unique // invoice.paid, service.created
