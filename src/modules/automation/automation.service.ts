@@ -17,9 +17,40 @@ export class AutomationService {
    * Runs every day at midnight to process billing and provisioning automation
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async handler() {
+  async handlerNightly() {
     await this.renewals();
     await this.suspensions();
+  }
+
+  /**
+   * Runs every 5 minutes to cancel payments and etc.
+   * Safe to run multiple times, will not create duplicate entries
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleFiveMin() {
+    await this.cancel();
+  }
+
+  async cancel() {
+
+    const targetTime = new Date();
+    targetTime.setHours(targetTime.getHours() - 1);
+
+    const transaction = await this.prisma.$transaction(async (tx) => {
+      await tx.transaction.updateMany({
+        where: {
+          status: 'PENDING',
+          createdAt: {
+            lt: targetTime
+          }
+        },
+        data: {
+          status: 'FAILED'
+        }
+      })
+    })
+
+    return transaction
   }
 
   /**
@@ -50,7 +81,9 @@ export class AutomationService {
         },
       },
       include: {
-        product: true,
+        product: {
+          include: { variants: true },
+        },
         organization: { include: { currency: true } },
       },
     });
@@ -58,7 +91,14 @@ export class AutomationService {
     const invoiceIds = await this.prisma.$transaction(async (tx) => {
       const results: number[] = [];
       for (const service of services) {
-        const subtotal = service.product.price;
+        /* find RENEW variant, fallback to first RECURRING */
+        const renewVariant =
+          service.product.variants.find((v) => v.action === 'RENEW') ||
+          service.product.variants.find((v) => v.action === 'RECURRING');
+
+        if (!renewVariant) continue;
+
+        const subtotal = renewVariant.price;
         const tax = parseFloat((subtotal * (sumRate / 100)).toFixed(2));
         const total = subtotal + tax;
 
@@ -77,8 +117,8 @@ export class AutomationService {
               create: {
                 description: `Renewal - ${service.product.name}`,
                 quantity: 1,
-                unitPrice: service.product.price,
-                total: service.product.price,
+                unitPrice: subtotal,
+                total: subtotal,
                 serviceId: service.id,
               },
             },

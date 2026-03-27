@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { BillingCycle, ProductType } from '@prisma/client';
+import { ProductType } from '@prisma/client';
 
 export class CreateProductDto {
   @ApiProperty({ description: 'Name of the product' })
@@ -18,10 +18,6 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
-
-  @ApiProperty({ description: 'Price of the product' })
-  @IsNumber()
-  price: number;
 
   @ApiProperty({ description: 'ID of the currency' })
   @IsNumber()
@@ -35,13 +31,6 @@ export class CreateProductDto {
   @ApiProperty({ enum: ProductType, description: 'Type of the product' })
   @IsEnum(ProductType)
   type: ProductType;
-
-  @ApiProperty({
-    enum: BillingCycle,
-    description: 'Billing cycle of the product',
-  })
-  @IsEnum(BillingCycle)
-  cycle: BillingCycle;
 
   @ApiProperty({ description: 'Is the product active', required: false })
   @IsOptional()

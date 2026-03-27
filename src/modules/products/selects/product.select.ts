@@ -4,12 +4,19 @@ export const productSelect = {
   id: true,
   name: true,
   description: true,
-  price: true,
   type: true,
-  cycle: true,
   isActive: true,
   module: true,
   config: true,
+  variants: {
+    select: {
+      id: true,
+      action: true,
+      cycle: true,
+      price: true,
+    },
+    orderBy: { price: 'asc' as const },
+  },
   currency: {
     select: {
       id: true,

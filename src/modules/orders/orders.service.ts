@@ -54,6 +54,7 @@ export class OrdersService {
         where: {
           cartId: cart.id,
         },
+        include: { variant: true },
       });
       if (!cartItems.length) {
         throw new NotFoundException('Cart is empty');
@@ -75,12 +76,12 @@ export class OrdersService {
         },
       });
 
-      /* calculate product prices batch */
-      const productsPrices = await this.currencyConverter.convert(
-        products.map((product) => ({
-          id: product.id,
-          amount: product.price,
-          currencyId: product.currencyId,
+      /* calculate variant prices batch */
+      const variantPrices = await this.currencyConverter.convert(
+        cartItems.map((item) => ({
+          id: item.variantId,
+          amount: item.variant.price,
+          currencyId: products.find((p) => p.id === item.productId)!.currencyId,
         })),
         organization.currencyId,
       );
@@ -101,9 +102,9 @@ export class OrdersService {
           );
         }
 
-        /* product price in new currency */
-        const priceNewCurrency = productsPrices.find(
-          (productPrice) => productPrice.id === product.id,
+        /* variant price in org currency */
+        const priceNewCurrency = variantPrices.find(
+          (vp) => vp.id === item.variantId,
         )?.amount;
         if (!priceNewCurrency) {
           throw new BadRequestException(`Calculation failed`);
@@ -116,6 +117,7 @@ export class OrdersService {
         /* order items with product */
         orderItemsWithProduct.push({
           ...item,
+          product,
           unitPrice: priceNewCurrency,
           total: priceNewCurrency * item.quantity,
         });
@@ -176,6 +178,7 @@ export class OrdersService {
               unitPrice: item.unitPrice,
               total: item.total,
               productId: item.productId,
+              variantId: item.variantId,
             })),
           },
         },
@@ -186,7 +189,7 @@ export class OrdersService {
         .filter(
           (item) => item.product?.type === 'DOMAIN' && item.config?.domain,
         )
-        .map((item) => item.config.domain);
+        .map((item) => (item.config as any).domain);
 
       if (domainNames.length > 0) {
         await prisma.domain.createMany({

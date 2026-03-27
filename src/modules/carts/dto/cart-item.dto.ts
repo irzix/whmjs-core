@@ -12,6 +12,12 @@ export class CartItemDto {
   @Type(() => Number)
   productId: number;
 
+  @ApiProperty({ description: 'Variant ID' })
+  @IsInt()
+  @IsPositive()
+  @Type(() => Number)
+  variantId: number;
+
   @ApiProperty({ description: 'Configuration' })
   @IsOptional()
   config: InputJsonValue;

@@ -1,6 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BillingCycle, ProductType } from '@prisma/client';
+import { BillingCycle, ProductType, VariantAction } from '@prisma/client';
 import { CategoryEntity } from '../../categories/entities/category-response.entity';
+
+export class ProductVariantEntity {
+  @ApiProperty({ example: 1 })
+  id: number;
+
+  @ApiProperty({ enum: VariantAction, example: VariantAction.RECURRING })
+  action: VariantAction;
+
+  @ApiProperty({ enum: BillingCycle, example: BillingCycle.MONTHLY })
+  cycle: BillingCycle;
+
+  @ApiProperty({ example: 9.99 })
+  price: number;
+}
 
 export class ProductEntity {
   @ApiProperty({ example: 1 })
@@ -15,9 +29,6 @@ export class ProductEntity {
   @ApiProperty({ enum: ProductType, example: ProductType.HOSTING })
   type: ProductType;
 
-  @ApiProperty({ example: 9.99 })
-  price: number;
-
   @ApiProperty({ example: 1 })
   currencyId: number;
 
@@ -27,9 +38,6 @@ export class ProductEntity {
   @ApiProperty({ type: () => CategoryEntity, required: false })
   category?: CategoryEntity;
 
-  @ApiProperty({ enum: BillingCycle, example: BillingCycle.MONTHLY })
-  cycle: BillingCycle;
-
   @ApiProperty({ example: true })
   isActive: boolean;
 
@@ -38,6 +46,9 @@ export class ProductEntity {
 
   @ApiProperty({ example: { storage: '10GB' }, required: false })
   config?: any;
+
+  @ApiProperty({ type: () => [ProductVariantEntity] })
+  variants?: ProductVariantEntity[];
 
   @ApiProperty()
   createdAt: Date;

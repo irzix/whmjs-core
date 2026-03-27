@@ -76,6 +76,40 @@ export class DomainsController {
 
   @UseGuards(AuthGuard, PermissionsGuard)
   @ApiBearerAuth()
+  @RequirePermission('domains', 'update', 'own')
+  @Patch(':id/renew')
+  @ApiOperation({ summary: 'Renew a domain' })
+  @ApiResponse({ status: 200 })
+  async renew(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return await this.domainsService.renew(id, req.user);
+  }
+
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('domains', 'update', 'own')
+  @Patch(':id/transfer')
+  @ApiOperation({ summary: 'Transfer a domain' })
+  @ApiResponse({ status: 200 })
+  async transfer(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('authCode') authCode: string,
+    @Req() req,
+  ) {
+    return await this.domainsService.transfer(id, authCode, req.user);
+  }
+
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
+  @RequirePermission('domains', 'read', 'own')
+  @Get(':id/auth-code')
+  @ApiOperation({ summary: 'Get domain auth/EPP code' })
+  @ApiResponse({ status: 200 })
+  async getAuthCode(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    return await this.domainsService.getAuthCode(id, req.user);
+  }
+
+  @UseGuards(AuthGuard, PermissionsGuard)
+  @ApiBearerAuth()
   @RequirePermission('domains', 'delete', 'all')
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a domain by ID' })

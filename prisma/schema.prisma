@@ -125,6 +125,8 @@ model OrderItem {
   orderId     Int
   product     Product  @relation(fields: [productId], references: [id])
   productId   Int
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  variantId   Int
   createdAt   DateTime @default(now())
 }
 
@@ -150,6 +152,8 @@ model CartItem {
   cartId    Int
   product   Product  @relation(fields: [productId], references: [id])
   productId Int
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId Int
   config    Json?    // { domain: 'example.com', os: 'ubuntu' }
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
@@ -268,15 +272,14 @@ model Product {
   name        String
   description String?
   type        ProductType
-  price       Float
   currency    Currency         @relation(fields: [currencyId], references: [id])
   currencyId  Int
   category    Category?        @relation(fields: [categoryId], references: [id])
   categoryId  Int?
-  cycle       BillingCycle     @default(MONTHLY)
   isActive    Boolean          @default(true)
   module      String?
   config      Json?
+  variants    ProductVariant[]
   services    Service[]
   cartItems   CartItem[]
   orderItems  OrderItem[]
@@ -300,6 +303,29 @@ enum BillingCycle {
   BIENNIAL
   TRIENNIAL
   ONETIME
+}
+
+enum VariantAction {
+  RECURRING
+  REGISTER
+  RENEW
+  TRANSFER
+  SETUP
+}
+
+model ProductVariant {
+  id         Int           @id @default(autoincrement())
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  action     VariantAction
+  cycle      BillingCycle
+  price      Float
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([productId, action, cycle])
 }
 
 model Domain {

@@ -77,29 +77,46 @@ export class DomainsService {
   async update(id: number, updateDomainDto: UpdateDomainDto, user) {
     await this.findOne(id, user);
 
-    if (updateDomainDto.nameservers) {
+    const { nameservers, isLocked, privacy, ...data } = updateDomainDto;
+
+    if (nameservers) {
       await this.registrarsHandler.executeAction(id, 'nameservers', {
-        nameservers: updateDomainDto.nameservers,
+        nameservers,
       });
     }
 
-    if (updateDomainDto.isLocked !== undefined) {
+    if (isLocked !== undefined) {
       await this.registrarsHandler.executeAction(
         id,
-        updateDomainDto.isLocked ? 'lock' : 'unlock',
+        isLocked ? 'lock' : 'unlock',
       );
     }
 
-    if (updateDomainDto.privacy !== undefined) {
+    if (privacy !== undefined) {
       await this.registrarsHandler.executeAction(id, 'privacy', {
-        enabled: updateDomainDto.privacy,
+        enabled: privacy,
       });
     }
 
     return await this.prisma.domain.update({
       where: { id },
-      data: updateDomainDto,
+      data,
     });
+  }
+
+  async renew(id: number, user) {
+    await this.findOne(id, user);
+    return this.registrarsHandler.executeAction(id, 'renew');
+  }
+
+  async transfer(id: number, authCode: string, user) {
+    await this.findOne(id, user);
+    return this.registrarsHandler.executeAction(id, 'transfer', { authCode });
+  }
+
+  async getAuthCode(id: number, user) {
+    await this.findOne(id, user);
+    return this.registrarsHandler.executeAction(id, 'code');
   }
 
   async remove(id: number, user) {

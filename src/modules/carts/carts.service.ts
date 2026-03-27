@@ -45,10 +45,18 @@ export class CartsService {
       throw new NotFoundException('Product not found');
     }
 
+    const variant = await this.prisma.productVariant.findUnique({
+      where: { id: cartData.variantId },
+    });
+    if (!variant || variant.productId !== product.id) {
+      throw new NotFoundException('Variant not found for this product');
+    }
+
     const CartItem = await this.prisma.cartItem.create({
       data: {
         cartId: cartId,
         productId: cartData.productId,
+        variantId: cartData.variantId,
         quantity: cartData.quantity,
         config: cartData.config,
       },
@@ -74,7 +82,7 @@ export class CartsService {
       where: {
         organizationId: currentUser.organizationId,
       },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: true, variant: true } } },
     });
     if (!cart) {
       return { total: 0, discount: 0, tax: 0, subtotal: 0 };
@@ -86,13 +94,7 @@ export class CartsService {
     let tax = 0;
     let subtotal = 0;
     for (const item of cart.items) {
-      const product = await this.prisma.product.findUnique({
-        where: { id: item.productId },
-      });
-
-      if (product) {
-        subtotal += product.price * item.quantity;
-      }
+      subtotal += item.variant.price * item.quantity;
     }
     total = subtotal;
 
