@@ -62,6 +62,12 @@ enum Status {
 model Organization {
   id        Int       @id @default(autoincrement())
   name      String
+  phone     String?
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+  country   String?   // ISO 3166-1 alpha-2 (US, DE, IR, ...)
   users     User[]
   invoices  Invoice[]
   orders    Order[]
@@ -125,6 +131,8 @@ model OrderItem {
   orderId     Int
   product     Product  @relation(fields: [productId], references: [id])
   productId   Int
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  variantId   Int
   createdAt   DateTime @default(now())
 }
 
@@ -134,6 +142,7 @@ model Cart {
   organization   Organization @relation(fields: [organizationId], references: [id])
   organizationId Int        @unique
   status         CartStatus @default(ACTIVE)
+  couponCode     String?
   items          CartItem[]
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
@@ -150,6 +159,8 @@ model CartItem {
   cartId    Int
   product   Product  @relation(fields: [productId], references: [id])
   productId Int
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  variantId Int
   config    Json?    // { domain: 'example.com', os: 'ubuntu' }
   quantity  Int      @default(1)
   createdAt DateTime @default(now())
@@ -248,18 +259,36 @@ model PaymentGateway {
   updatedAt    DateTime @updatedAt
 }
 
+model Category {
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  description String?
+  order       Int        @default(0)
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parentId    Int?
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
 model Product {
   id          Int              @id @default(autoincrement())
   name        String
   description String?
   type        ProductType
-  price       Float
   currency    Currency         @relation(fields: [currencyId], references: [id])
   currencyId  Int
-  cycle       BillingCycle     @default(MONTHLY)
+  category    Category?        @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  server      Server?          @relation(fields: [serverId], references: [id])
+  serverId    Int?
+  tld         String?          @unique // .com, .net, .ir — only for DOMAIN products
   isActive    Boolean          @default(true)
-  module      String?
   config      Json?
+  variants    ProductVariant[]
   services    Service[]
   cartItems   CartItem[]
   orderItems  OrderItem[]
@@ -268,11 +297,8 @@ model Product {
 }
 
 enum ProductType {
-  HOSTING
-  VPS
+  SERVICE
   DOMAIN
-  LICENSE
-  OTHER
 }
 
 enum BillingCycle {
@@ -285,11 +311,35 @@ enum BillingCycle {
   ONETIME
 }
 
+enum VariantAction {
+  RECURRING
+  REGISTER
+  RENEW
+  TRANSFER
+  SETUP
+}
+
+model ProductVariant {
+  id         Int           @id @default(autoincrement())
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int
+  action     VariantAction
+  cycle      BillingCycle
+  price      Float
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([productId, action, cycle])
+}
+
 model Domain {
   id             Int          @id @default(autoincrement())
   name           String       @unique
   status         DomainStatus @default(PENDING)
-  registrar      String?      // resellerclub, enom
+  registrar      Registrar?   @relation(fields: [registrarId], references: [id])
+  registrarId    Int?
   expiresAt      DateTime?
   autoRenew      Boolean      @default(true)
   nameservers    String[]     @default([])
@@ -302,6 +352,16 @@ model Domain {
   invoiceItems   InvoiceItem[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model Registrar {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // spaceship, dynadot
+  isActive  Boolean  @default(false)
+  config    Json?    // api keys, secrets
+  domains   Domain[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum DomainStatus {
@@ -362,6 +422,7 @@ model Server {
   maxAccounts   Int?
   provisioner   Provisioner @relation(fields: [provisionerId], references: [id])
   provisionerId Int
+  products      Product[]
   services      Service[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -406,6 +467,27 @@ model Announcement {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model NotificationProvider {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // smtp, sms, push
+  isActive  Boolean  @default(false)
+  config    Json?
+  logs      NotificationLog[]
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationLog {
+  id         Int      @id @default(autoincrement())
+  type       String   // email, sms, push
+  to         String
+  subject    String?
+  status     String   // sent, failed
+  error      String?
+  provider   NotificationProvider @relation(fields: [providerId], references: [id])
+  providerId Int
+  createdAt  DateTime @default(now())
 }
 
 model NotificationTemplate {

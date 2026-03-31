@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { OutboxService } from '../outbox/outbox.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { TaxesCalculator } from '../taxes/taxes.calculator';
 
 @Injectable()
 export class AutomationService {
@@ -11,15 +12,47 @@ export class AutomationService {
     private readonly prisma: PrismaService,
     private readonly outboxService: OutboxService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly taxesCalculator: TaxesCalculator,
   ) { }
 
   /**
    * Runs every day at midnight to process billing and provisioning automation
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async handler() {
+  async handlerNightly() {
     await this.renewals();
     await this.suspensions();
+  }
+
+  /**
+   * Runs every 5 minutes to cancel payments and etc.
+   * Safe to run multiple times, will not create duplicate entries
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleFiveMin() {
+    await this.cancel();
+  }
+
+  async cancel() {
+
+    const targetTime = new Date();
+    targetTime.setHours(targetTime.getHours() - 1);
+
+    const transaction = await this.prisma.$transaction(async (tx) => {
+      await tx.transaction.updateMany({
+        where: {
+          status: 'PENDING',
+          createdAt: {
+            lt: targetTime
+          }
+        },
+        data: {
+          status: 'FAILED'
+        }
+      })
+    })
+
+    return transaction
   }
 
   /**
@@ -31,9 +64,6 @@ export class AutomationService {
     targetDate.setDate(targetDate.getDate() + 7);
 
     /* tax calculation */
-    const taxRates = await this.prisma.tax.findMany({ where: { isActive: true } });
-    const sumRate = taxRates.reduce((acc, t) => acc + t.rate, 0);
-
     const services = await this.prisma.service.findMany({
       where: {
         status: 'ACTIVE',
@@ -50,16 +80,33 @@ export class AutomationService {
         },
       },
       include: {
-        product: true,
-        organization: { include: { currency: true } },
+        product: {
+          include: { variants: true },
+        },
+        organization: { select: { id: true, currencyId: true, country: true } },
       },
     });
+
+    /* tax rates per country */
+    const countries = [...new Set(services.map((s) => s.organization.country))];
+    const taxRateMap = new Map<string | null, number>();
+    for (const country of countries) {
+      taxRateMap.set(country ?? null, await this.taxesCalculator.getRate(country));
+    }
 
     const invoiceIds = await this.prisma.$transaction(async (tx) => {
       const results: number[] = [];
       for (const service of services) {
-        const subtotal = service.product.price;
-        const tax = parseFloat((subtotal * (sumRate / 100)).toFixed(2));
+        /* find RENEW variant, fallback to first RECURRING */
+        const renewVariant =
+          service.product.variants.find((v) => v.action === 'RENEW') ||
+          service.product.variants.find((v) => v.action === 'RECURRING');
+
+        if (!renewVariant) continue;
+
+        const subtotal = renewVariant.price;
+        const rate = taxRateMap.get(service.organization.country ?? null) ?? 0;
+        const tax = parseFloat((subtotal * (rate / 100)).toFixed(2));
         const total = subtotal + tax;
 
         const invoice = await tx.invoice.create({
@@ -77,8 +124,8 @@ export class AutomationService {
               create: {
                 description: `Renewal - ${service.product.name}`,
                 quantity: 1,
-                unitPrice: service.product.price,
-                total: service.product.price,
+                unitPrice: subtotal,
+                total: subtotal,
                 serviceId: service.id,
               },
             },

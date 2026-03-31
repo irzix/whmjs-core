@@ -17,55 +17,73 @@ export class NotificationsWorker extends WorkerHost {
   async process(job: Job<NotificationDto>): Promise<any> {
     const notification = job.data;
 
-    try {
-      /* find notification drivers */
-      const drivers = await this.prisma.setting.findUnique({
-        where: {
-          key: 'notification_drivers',
-        },
-      });
+    /* find notification drivers */
+    const drivers = await this.prisma.setting.findUnique({
+      where: { key: 'notification_drivers' },
+    });
 
-      if (!drivers) {
-        throw new Error('Notification drivers settings not found');
-      }
-
-      const driver =
-        drivers.value &&
-        (drivers.value as Record<string, string>)[notification.type];
-      if (!driver) {
-        throw new Error(
-          `Notification driver not found for type: ${notification.type}`,
-        );
-      }
-
-      const provider = this.notificationFactory.get(driver);
-
-      /* find notification template */
-      const template = await this.prisma.notificationTemplate.findUnique({
-        where: {
-          name: notification.template,
-        },
-      });
-
-      if (!template) {
-        throw new Error(
-          `Notification template '${notification.template}' not found`,
-        );
-      }
-
-      const body = Handlebars.compile(template.body)(notification);
-      const subject = Handlebars.compile(template.subject)(notification);
-
-      const result = await provider.send({
-        to: notification.to,
-        subject: subject,
-        body: body,
-      });
-
-      return result;
-    } catch (error: any) {
-      throw error;
+    if (!drivers) {
+      throw new Error('Notification drivers settings not found');
     }
+
+    const driverName =
+      drivers.value &&
+      (drivers.value as Record<string, string>)[notification.type];
+    if (!driverName) {
+      throw new Error(
+        `Notification driver not found for type: ${notification.type}`,
+      );
+    }
+
+    /* find provider and its config from DB */
+    const providerRecord = await this.prisma.notificationProvider.findUnique({
+      where: { name: driverName },
+    });
+
+    if (!providerRecord || !providerRecord.isActive) {
+      throw new Error(`Notification provider '${driverName}' is not active`);
+    }
+
+    const provider = this.notificationFactory.get(driverName);
+
+    /* find notification template */
+    const template = await this.prisma.notificationTemplate.findUnique({
+      where: { name: notification.template },
+    });
+
+    if (!template) {
+      throw new Error(
+        `Notification template '${notification.template}' not found`,
+      );
+    }
+
+    const body = Handlebars.compile(template.body)(notification);
+    const subject = Handlebars.compile(template.subject)(notification);
+
+    const result = await provider.send({
+      config: providerRecord.config as any,
+      to: notification.to,
+      subject,
+      body,
+    });
+
+    /* log the notification */
+    await this.prisma.notificationLog.create({
+      data: {
+        type: notification.type,
+        to: notification.to,
+        subject,
+        status: result.status ? 'sent' : 'failed',
+        error: result.status ? null : result.message,
+        providerId: providerRecord.id,
+      },
+    });
+
+    if (!result.status) {
+      throw new Error(result.message);
+    }
+
+    return result;
   }
 
   @OnWorkerEvent('failed')

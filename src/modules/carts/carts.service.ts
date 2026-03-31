@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CartItemDto } from './dto/cart-item.dto';
 import { User } from '@prisma/client';
 import { CouponsCalculator } from '../coupons/coupons.calculator';
+import { TaxesCalculator } from '../taxes/taxes.calculator';
 
 @Injectable()
 export class CartsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly couponsCalculator: CouponsCalculator,
+    private readonly taxesCalculator: TaxesCalculator,
   ) {}
 
   /**
@@ -44,17 +46,72 @@ export class CartsService {
     if (!product || !product.isActive) {
       throw new NotFoundException('Product not found');
     }
+    if (product.type === 'DOMAIN') {
+      throw new BadRequestException('Use /carts/domain to add domain products');
+    }
+
+    const variant = await this.prisma.productVariant.findUnique({
+      where: { id: cartData.variantId },
+    });
+    if (!variant || variant.productId !== product.id) {
+      throw new NotFoundException('Variant not found for this product');
+    }
 
     const CartItem = await this.prisma.cartItem.create({
       data: {
         cartId: cartId,
         productId: cartData.productId,
+        variantId: cartData.variantId,
         quantity: cartData.quantity,
         config: cartData.config,
       },
     });
 
     return CartItem;
+  }
+
+  /**
+   * Add a domain to the cart — resolves product by TLD
+   */
+  async addDomain(domain: string, currentUser: User) {
+    const tld = '.' + domain.split('.').slice(1).join('.');
+
+    const product = await this.prisma.product.findFirst({
+      where: { type: 'DOMAIN', tld, isActive: true },
+      include: { variants: true },
+    });
+    if (!product) {
+      throw new NotFoundException(`No pricing found for TLD "${tld}"`);
+    }
+
+    const variant = product.variants.find((v) => v.action === 'REGISTER');
+    if (!variant) {
+      throw new NotFoundException(`No REGISTER variant found for "${tld}"`);
+    }
+
+    const cartId = await this.resolveCartId(currentUser);
+
+    return this.prisma.cartItem.create({
+      data: {
+        cartId,
+        productId: product.id,
+        variantId: variant.id,
+        quantity: 1,
+        config: { domain },
+      },
+    });
+  }
+
+  /**
+   * Resolve or create cart for user
+   */
+  private async resolveCartId(currentUser: User): Promise<number> {
+    const cart = await this.prisma.cart.upsert({
+      where: { organizationId: currentUser.organizationId },
+      update: {},
+      create: { organizationId: currentUser.organizationId },
+    });
+    return cart.id;
   }
 
   /**
@@ -74,10 +131,19 @@ export class CartsService {
       where: {
         organizationId: currentUser.organizationId,
       },
-      include: { items: { include: { product: true } } },
+      include: { items: { include: { product: true, variant: true } } },
     });
     if (!cart) {
       return { total: 0, discount: 0, tax: 0, subtotal: 0 };
+    }
+
+    /* persist coupon on cart */
+    const appliedCode = couponCode ?? cart.couponCode;
+    if (couponCode !== undefined && couponCode !== cart.couponCode) {
+      await this.prisma.cart.update({
+        where: { id: cart.id },
+        data: { couponCode: couponCode || null },
+      });
     }
 
     // Calculate the total price of the cart
@@ -86,22 +152,14 @@ export class CartsService {
     let tax = 0;
     let subtotal = 0;
     for (const item of cart.items) {
-      const product = await this.prisma.product.findUnique({
-        where: { id: item.productId },
-      });
-
-      if (product) {
-        subtotal += product.price * item.quantity;
-      }
+      subtotal += item.variant.price * item.quantity;
     }
     total = subtotal;
 
     /* check coupon */
-    if (couponCode) {
+    if (appliedCode) {
       const coupon = await this.prisma.coupon.findUnique({
-        where: {
-          code: couponCode,
-        },
+        where: { code: appliedCode },
       });
       if (coupon) {
         const couponDiscount = await this.couponsCalculator.calculateDiscount(
@@ -115,21 +173,13 @@ export class CartsService {
     }
 
     /* Apply tax */
-    const taxRates = await this.prisma.tax.findMany({
-      where: {
-        isActive: true,
-      },
-    });
-    const sumRate = taxRates.reduce((acc, t) => acc + t.rate, 0);
-    tax = total * (sumRate / 100);
+    const taxRate = await this.taxesCalculator.getRate(organization.country);
+    tax = parseFloat((total * (taxRate / 100)).toFixed(2));
     total += tax;
-
-    if (!cart) {
-      throw new NotFoundException('Cart not found');
-    }
 
     return {
       ...cart,
+      couponCode: appliedCode,
       total,
       discount,
       tax,
@@ -149,10 +199,15 @@ export class CartsService {
         id,
         cart: { organizationId: currentUser.organizationId },
       },
+      include: { product: true },
     });
 
     if (!cartItem) {
       throw new NotFoundException('Cart item not found');
+    }
+
+    if (cartItem.product.type === 'DOMAIN') {
+      throw new BadRequestException('Domain items cannot be updated, remove and re-add instead');
     }
 
     return this.prisma.cartItem.update({

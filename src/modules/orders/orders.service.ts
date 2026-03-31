@@ -8,6 +8,7 @@ import { InvoiceStatus, User } from '@prisma/client';
 import { hasPermission } from 'src/common/decorators/permission.decorator';
 import { CouponsCalculator } from '../coupons/coupons.calculator';
 import { CurrenciesCalculator } from '../currencies/currencies.calculator';
+import { TaxesCalculator } from '../taxes/taxes.calculator';
 import { PaymentGatewaysHandler } from '../payments/payment-gateways.handler';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -22,6 +23,7 @@ export class OrdersService {
     private readonly eventEmitter: EventEmitter2,
     private readonly paymentGatewaysHandler: PaymentGatewaysHandler,
     private readonly currencyConverter: CurrenciesCalculator,
+    private readonly taxesCalculator: TaxesCalculator,
   ) { }
 
   /**
@@ -54,6 +56,7 @@ export class OrdersService {
         where: {
           cartId: cart.id,
         },
+        include: { variant: true },
       });
       if (!cartItems.length) {
         throw new NotFoundException('Cart is empty');
@@ -75,12 +78,12 @@ export class OrdersService {
         },
       });
 
-      /* calculate product prices batch */
-      const productsPrices = await this.currencyConverter.convert(
-        products.map((product) => ({
-          id: product.id,
-          amount: product.price,
-          currencyId: product.currencyId,
+      /* calculate variant prices batch */
+      const variantPrices = await this.currencyConverter.convert(
+        cartItems.map((item) => ({
+          id: item.variantId,
+          amount: item.variant.price,
+          currencyId: products.find((p) => p.id === item.productId)!.currencyId,
         })),
         organization.currencyId,
       );
@@ -101,9 +104,9 @@ export class OrdersService {
           );
         }
 
-        /* product price in new currency */
-        const priceNewCurrency = productsPrices.find(
-          (productPrice) => productPrice.id === product.id,
+        /* variant price in org currency */
+        const priceNewCurrency = variantPrices.find(
+          (vp) => vp.id === item.variantId,
         )?.amount;
         if (!priceNewCurrency) {
           throw new BadRequestException(`Calculation failed`);
@@ -116,16 +119,18 @@ export class OrdersService {
         /* order items with product */
         orderItemsWithProduct.push({
           ...item,
+          product,
           unitPrice: priceNewCurrency,
           total: priceNewCurrency * item.quantity,
         });
       }
 
       /* Apply coupon */
-      const coupon = createOrderDto.coupon
+      const couponCode = createOrderDto.coupon || cart.couponCode;
+      const coupon = couponCode
         ? await prisma.coupon.findUnique({
           where: {
-            code: createOrderDto.coupon,
+            code: couponCode,
           },
         })
         : null;
@@ -148,13 +153,8 @@ export class OrdersService {
       }
 
       /* Apply tax */
-      const taxRates = await prisma.tax.findMany({
-        where: {
-          isActive: true,
-        },
-      });
-      const sumRate = taxRates.reduce((acc, t) => acc + t.rate, 0);
-      tax = total * (sumRate / 100);
+      const taxRate = await this.taxesCalculator.getRate(organization.country);
+      tax = parseFloat((total * (taxRate / 100)).toFixed(2));
       total += tax;
 
       /* Order Creation */
@@ -176,6 +176,7 @@ export class OrdersService {
               unitPrice: item.unitPrice,
               total: item.total,
               productId: item.productId,
+              variantId: item.variantId,
             })),
           },
         },
@@ -186,7 +187,7 @@ export class OrdersService {
         .filter(
           (item) => item.product?.type === 'DOMAIN' && item.config?.domain,
         )
-        .map((item) => item.config.domain);
+        .map((item) => (item.config as any).domain);
 
       if (domainNames.length > 0) {
         await prisma.domain.createMany({
@@ -213,6 +214,7 @@ export class OrdersService {
         },
         data: {
           status: 'ACTIVE',
+          couponCode: null,
         },
       });
 
@@ -382,12 +384,7 @@ export class OrdersService {
       }),
     ]);
 
-    return {
-      orders,
-      total,
-      page,
-      limit,
-    };
+    return { data: orders, total, page, limit };
   }
 
   /**
