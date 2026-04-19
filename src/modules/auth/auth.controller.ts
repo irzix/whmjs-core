@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import {
   ForgotPasswordDto,
   LoginDto,
@@ -20,7 +22,7 @@ import { AuthService } from './auth.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -98,5 +100,33 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMe(@Req() req) {
     return await this.authService.getMe(req.user.id);
+  }
+
+  @Get('google')
+  @UseGuards(PassportAuthGuard('google'))
+  @ApiOperation({ summary: 'Start Google OAuth flow' })
+  @ApiResponse({ status: 302, description: 'Redirects to Google OAuth' })
+  async googleAuth() {
+    // This route initiates the Google OAuth flow
+    // Passport will handle the redirect to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(PassportAuthGuard('google'))
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  @ApiResponse({
+    status: 200,
+    description: 'Google OAuth successful',
+    type: AuthResponse,
+  })
+  async googleAuthCallback(@Req() req, @Res() res: Response) {
+    // req.user contains the user data from GoogleStrategy
+    const result = req.user;
+
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:7080';
+    const redirectUrl = `${frontendUrl}/auth/callback?token=${result.access_token}`;
+
+    res.redirect(redirectUrl);
   }
 }

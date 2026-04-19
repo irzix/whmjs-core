@@ -15,7 +15,7 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
-  password  String
+  password  String?
   firstName String?
   lastName  String?
   phone     String?  @unique
@@ -29,6 +29,7 @@ model User {
   verificationToken   String?
   resetPasswordToken  String?
   resetPasswordExpiry DateTime?
+  googleId           String?   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

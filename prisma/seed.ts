@@ -114,6 +114,12 @@ async function main() {
         currencyId: currency.id,
       },
     });
+  } else if (!org.currencyId) {
+    // Update existing organization with currencyId
+    org = await prisma.organization.update({
+      where: { id: org.id },
+      data: { currencyId: currency.id },
+    });
   }
 
   // --- 6. Super Admin User ---

@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import * as dotenv from 'dotenv';
 import { PassportModule } from '@nestjs/passport';
-import { AuthGuard } from './auth.guard';
-import { JwtStrategy } from './jwt.strategy';
-import { AuthListener } from './auth.listener';
-import { NotificationsModule } from '../notifications/notifications.module';
+import * as dotenv from 'dotenv';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { AuthController } from './auth.controller';
+import { AuthGuard } from './auth.guard';
+import { AuthListener } from './auth.listener';
+import { AuthService } from './auth.service';
+import { GoogleStrategy } from './google.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ dotenv.config();
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, AuthGuard, AuthListener],
+  providers: [AuthService, JwtStrategy, GoogleStrategy, AuthGuard, AuthListener],
   exports: [PassportModule, JwtStrategy, AuthGuard],
 })
 export class AuthModule { }
