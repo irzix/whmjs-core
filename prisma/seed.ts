@@ -311,7 +311,7 @@ async function main() {
   const defaultSettings: any[] = [
     { key: 'site_name', value: process.env.Brand, isPublic: true },
     { key: 'maintenance_mode', value: 'false', isPublic: true },
-    { key: 'support_email', value: 'support@webito.io', isPublic: true },
+    { key: 'support_email', value: 'support@test.com', isPublic: true },
     { key: 'notification_drivers', value: { email: 'smtp', sms: 'twilio' }, isPublic: false },
     { key: 'admin_roles', value: [superadmin.id], isPublic: true }, // the roles have access to admin dashboard
     { key: 'default_role', value: userrole.id, isPublic: false }, // default_role

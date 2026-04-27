@@ -4,8 +4,6 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Made by Webito](https://img.shields.io/badge/made%20by-Webito-black)](https://webito.io)
-[![Sponsor](https://img.shields.io/badge/Sponsor-webito--io-ff69b4)](https://github.com/sponsors/webito-io)
 
 ---
 
