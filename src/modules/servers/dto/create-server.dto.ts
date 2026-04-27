@@ -14,7 +14,7 @@ export class CreateServerDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Server hostname (e.g., srv1.hostito.com)' })
+  @ApiProperty({ description: 'Server hostname (e.g., srv1.WHMJS.com)' })
   @IsNotEmpty()
   @IsString()
   hostname: string;

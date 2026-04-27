@@ -1,4 +1,4 @@
-# Hostito
+# WHMJS
 
 > Open source web hosting billing & management system — built with NestJS and PostgreSQL (via Prisma).
 
@@ -9,9 +9,9 @@
 
 ---
 
-## What is Hostito?
+## What is WHMJS?
 
-Hostito is a free, open source alternative to WHMCS — built for the modern web.
+WHMJS is a free, open source alternative to WHMCS — built for the modern web.
 
 No PHP. No expensive licenses. No ugly interfaces.
 
@@ -49,8 +49,8 @@ Just a clean, developer-friendly billing and client management system for hostin
 
 ```bash
 # Clone the repo
-git clone https://github.com/webito-io/hostito-core.git
-cd hostito-core
+git clone https://github.com/irzix/whmjs-core.git
+cd whmjs-core
 
 # Install dependencies
 npm install
@@ -70,7 +70,7 @@ npm run start:dev
 ## Project Structure
 
 ```
-hostito-core/
+whmjs-core/
 ├── src/
 │   ├── main.ts
 │   ├── app.module.ts
@@ -130,7 +130,7 @@ Set these in your `.env`:
 
 ## Contributing
 
-Hostito is built by the community, for the community. All contributions are welcome.
+WHMJS is built by the community, for the community. All contributions are welcome.
 
 1. Fork the repository
 2. Create a new branch — `git checkout -b feature/your-feature`

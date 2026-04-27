@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 export class AppService {
   getHello() {
     return {
-      message: 'Hostito Core API',
+      message: 'WHMJS Core API',
       version: '0.1.0',
       docs: `/api`,
     };

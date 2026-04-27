@@ -4,15 +4,15 @@ import { apiReference } from '@scalar/nestjs-api-reference';
 
 export function setupSwagger(app: INestApplication) {
   const config = new DocumentBuilder()
-    .setTitle('Hostito API')
+    .setTitle('WHMJS API')
     .setDescription(
-      'Open source hosting billing & management system — WHMCS alternative.\n\n' +
-        '[View on GitHub](https://github.com/webito-io/hostito-core)',
+      'WHMJS (Webhost Management JavaScript) - Open source WHMCS alternative for resellers and hosting providers.\n\n' +
+      '[View on GitHub](https://github.com/irzix/whmjs-core)',
     )
-    .setVersion('0.1.0')
+    .setVersion('0.0.2')
     .setExternalDoc(
       'GitHub Repository',
-      'https://github.com/webito-io/hostito-core',
+      'https://github.com/irzix/whmjs-core',
     )
     .addBearerAuth()
     .build();

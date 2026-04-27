@@ -1,4 +1,4 @@
-# Contributing to Hostito
+# Contributing to WHMJS
 
 Thanks for taking the time to contribute! 🎉
 
@@ -7,7 +7,7 @@ Thanks for taking the time to contribute! 🎉
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork — `git clone https://github.com/your-username/hostito-core.git`
+2. Clone your fork — `git clone https://github.com/irzix/whmjs-core.git`
 3. Create a branch — `git checkout -b feature/your-feature`
 4. Make your changes
 5. Commit — `git commit -m "feat: your feature description"`

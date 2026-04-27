@@ -114,7 +114,7 @@ export class CpanelProvider implements ProvisionerProvider {
     const data = await this.request<Record<string, unknown>>(
       server,
       'suspendacct',
-      { user: service.username, reason: 'Suspended by Hostito Billing' },
+      { user: service.username, reason: 'Suspended by WHMJS Billing' },
     );
     return { status: 'success', data };
   }

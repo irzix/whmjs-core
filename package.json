@@ -1,10 +1,14 @@
 {
-  "name": "hostito-core",
-  "version": "0.0.1",
-  "description": "Open source hosting billing & management system — WHMCS alternative",
+  "name": "whmjs-core",
+  "version": "0.0.2",
+  "description": "WHMJS (Webhost Management JavaScript) - Open source WHMCS alternative for resellers and hosting providers",
   "author": "Alireza Mohagheghi",
   "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/irzix/whmjs-core.git"
+  },
   "scripts": {
     "prepare": "npx prisma generate",
     "seed": "ts-node prisma/seed.ts",
