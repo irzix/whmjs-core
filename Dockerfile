@@ -7,16 +7,15 @@ WORKDIR /app
 
 # ======================== DEPS ========================
 FROM base AS deps
-# پکیج‌های مورد نیاز کامپایل ماژول‌های native مثل bcrypt روی alpine
 RUN apk add --no-cache libc6-compat python3 make g++
 COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
 RUN pnpm install --frozen-lockfile
 
 # ======================== BUILD =======================
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
 RUN npx prisma generate
 RUN pnpm run build
 
@@ -24,7 +23,7 @@ RUN pnpm run build
 FROM base AS prod-deps
 RUN apk add --no-cache libc6-compat python3 make g++
 COPY package.json pnpm-lock.yaml ./
-# نصب صرفاً پکیج‌های پروداکشن به جای اجرای prune
+COPY prisma ./prisma/
 RUN pnpm install --prod --frozen-lockfile
 
 # ======================== PRODUCTION ==================
@@ -35,9 +34,6 @@ WORKDIR /app
 COPY package.json ./
 COPY --from=build /app/dist ./dist
 COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
-
 COPY prisma ./prisma/
 
 CMD ["node", "dist/main.js"]
